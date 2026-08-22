@@ -138,6 +138,41 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
     letter-spacing: 1px;
 }
 
+/* Стили для миниатюр списков */
+.list-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 255, 65, 0.05);
+    border-left: 2px solid #00ff41;
+}
+.list-thumb {
+    width: 80px;
+    height: 60px;
+    flex-shrink: 0;
+    border: 1px solid #00ff41;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    text-align: center;
+    font-size: 10px;
+}
+.list-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.thumb-secret {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: #ff003c;
+    color: #ff003c;
+    font-weight: bold;
+    text-shadow: 0 0 5px #ff003c;
+}
+
 @media (max-width: 900px) {
     #ui-wrapper { flex-direction: column; }
     #side-terminal { display: none; }
@@ -195,7 +230,7 @@ const mainTerminal = document.getElementById("main-terminal");
    ========================================================= */
 const logFragments = [
     "CHK_MEM 0x00F8A...", "NET_PING: 34ms", "AUTH_BYPASS_TRY: NULL", 
-    "PROXY_ROUTE: GDA_01", "ODSTRZAL_SYS: IDLE", "ENCRYPT_LEVEL: 256bit", 
+    "PROXY_ROUTE: GD_01", "ODSTRZAL_SYS: IDLE", "ENCRYPT_LEVEL: 256bit", 
     "J_SILVER_TRACE: NOT_FOUND", "USER_SIG: V.SHALAMOV", "SYNC_DATA_LINK..."
 ];
 setInterval(() => {
@@ -279,7 +314,7 @@ function printLine(text) {
     scrollTerminal();
 }
 
-function typeText(text, callback, speed = 15) {
+function typeText(text, callback, speed = 25) {
     let i = 0;
     isTyping = true;
     const span = document.createElement("span");
@@ -312,7 +347,7 @@ function playView(text, callback = null, speed = 15) {
 }
 
 /* =========================================================
-   ODSTRZAŁ CORE (НОВЫЕ ПАТРОНЫ)
+   ODSTRZAŁ CORE 
    ========================================================= */
 const DROID_IMGS = {
     error: { src: "panika.png", name: "ODSTRZAŁ // PANIKA" },
@@ -417,7 +452,7 @@ function triggerRandomDroid() {
 const MAIN_STORY = `
 ========================================
 АНАТОМИЯ ГЛОБАЛЬНОГО РАЗВОДА
-ANATOMIA GLOBALNEGO OSZUSTWA
+ANATOMIA GLOBALN€GO O$ZUSTWA
 ========================================
 
 Сначала человеку показывают страну.
@@ -439,7 +474,7 @@ I on wierzy. Nie ma w tym nic dziwnego.
 Człowiek wierzy w to, w co musi wierzyć.
 
 Особенно когда дома ждать больше нечего.
-Zwłaszcza gdy w domu nie ma już na co czekać.
+Zwłaszcza gdy w domu не ma już na co czekać.
 
 Картинка не показывает очередь в больницу.
 Obrazek nie pokazuje kolejki do szpitala.
@@ -598,14 +633,14 @@ Przeprowadzka nie wymazuje pierwszego kraju. Nie możesz przekroczyć własnej p
 `;
 
 const PROJECTS = [
-    { id: "HONDA_VFR800", title: "HONDA VFR 800", year: "2026", status: "Тюнинг // CUSTOM & TUNING", description: "Тюнинг и настройка Honda VFR 800. // Tuning Honda VFR 800.", image: "assets/images/projects/honda.jpg" },
-    { id: "VESPA_LX50", title: "VESPA LX50", year: "2025", status: "КАСТОМ // CUSTOM BUILD", description: "Тюнинг Vespa. Аналоговая душа, точная механика. // Tuning Vespa. Analogowa dusza.", image: "assets/images/projects/vespa.jpg" },
-    { id: "DUCATI_MONSTER", title: "DUCATI MONSTER", year: "2021", status: "Тюнинг // REBUILD & REPAIR", description: "Техническое восстановление. // Odnowienie techniczne.", image: "assets/images/projects/ducati.jpg" }
+    { id: "HONDA_VFR800", title: "HONDA VFR 800", year: "2017", status: "Тюнинг // CUSTOM & TUNING", description: "Тюнинг и настройка Honda VFR 800. // Tuning Honda VFR 800.", image: "honda.jpg" },
+    { id: "VESPA_LX50", title: "VESPA LX50", year: "2025", status: "ЗАСЕКРЕЧЕНО // ŚCIŚLE TAJNE", description: "ДАННЫЕ ЗАСЕКРЕЧЕНЫ. ТРЕБУЕТСЯ ДОПУСК. // DANE UTAJNIONE. WYMAGANY DOSTĘP.", image: null },
+    { id: "DUCATI_MONSTER", title: "DUCATI MONSTER", year: "2021", status: "ЗАСЕКРЕЧЕНО // ŚCIŚLE TAJNE", description: "ДАННЫЕ ЗАСЕКРЕЧЕНЫ. ТРЕБУЕТСЯ ДОПУСК. // DANE UTAJNIONE. WYMAGANY DOSTĘP.", image: null }
 ];
 
 const LIFE_ARCHIVE = [
-    { id: "MEMORY_001", title: "MEMORY // 001", location: "ГДАНЬСК // GDAŃSK", date: "2026", image: "assets/images/life/001.jpg" },
-    { id: "MEMORY_002", title: "MEMORY // 002", location: "ГАРАЖ // GARAŻ", date: "2026", image: "assets/images/life/002.jpg" }
+    { id: "MEMORY_001", title: "MEMORY // 001", location: "ГДАНЬСК // GDAŃSK", date: "2026", image: null },
+    { id: "MEMORY_002", title: "MEMORY // 002", location: "ГАРАЖ // GARAŻ", date: "2026", image: null }
 ];
 
 const NOTES = {
@@ -699,10 +734,8 @@ function handleCommand(cmd, rawInput) {
         case "story2": 
             playView(STORY_2, () => { 
                 printDroid("Сильная история. Мороз по коже. // Mocna historia. Ciarki na plecach.", "curious", true); 
-                // Показываем фотку газели через 1.5 секунды
                 setTimeout(() => {
                     const gazelleImg = appendImage("gazelle.jpg", "ФОТОФИКСАЦИЯ // FOTO-DOWÓD", "ТАЙГА // TAJGA", "УЛИКА // DOWÓD RZECZOWY");
-                    // Удаляем фотку через 60 секунд
                     setTimeout(() => {
                         if (gazelleImg) {
                             gazelleImg.style.transition = "opacity 2s ease-in-out";
@@ -737,16 +770,84 @@ function handleCommand(cmd, rawInput) {
     }
 }
 
+// НОВАЯ ФУНКЦИЯ ПРОЕКТОВ (С МИНИАТЮРАМИ И ЗАГЛУШКАМИ)
 function showProjects() {
-    let projText = `\n========================================\nАРХИВ ПРОЕКТОВ // ARCHIWUM PROJEKTÓW\n========================================\n\n`;
-    PROJECTS.forEach((p, i) => { projText += `[${String(i+1).padStart(2,"0")}] ${p.id}\n     ${p.title}\n     ГОД: ${p.year}\n     СТАТУС: ${p.status}\n\n`; });
-    projText += "Команда: open [ID]\n"; playView(projText);
+    output.innerHTML = ""; 
+    appendText(`\n========================================\nАРХИВ ПРОЕКТОВ // ARCHIWUM PROJEKTÓW\n========================================\n`, () => {
+        
+        PROJECTS.forEach((p, i) => {
+            const row = document.createElement("div");
+            row.className = "list-row";
+
+            const thumb = document.createElement("div");
+            thumb.className = "list-thumb";
+
+            if (p.image) {
+                const img = document.createElement("img");
+                img.src = p.image;
+                thumb.appendChild(img);
+            } else {
+                thumb.classList.add("thumb-secret");
+                thumb.innerHTML = "TOP<br>SECRET";
+            }
+
+            const textDiv = document.createElement("div");
+            textDiv.style.whiteSpace = "pre-wrap";
+            textDiv.textContent = `[${String(i+1).padStart(2,"0")}] ${p.id}\n${p.title} // ${p.year}\n${p.status}`;
+
+            row.appendChild(thumb);
+            row.appendChild(textDiv);
+            output.appendChild(row);
+        });
+
+        const footer = document.createElement("div");
+        footer.textContent = `\nКоманда: open [ID] (например: open honda_vfr800) для полного отчета.\n`;
+        output.appendChild(footer);
+        
+        scrollTerminal();
+        promptLine.style.display = "flex";
+        inputField.focus();
+    }, 10);
 }
 
+// НОВАЯ ФУНКЦИЯ ЛИЧНОГО АРХИВА (ПОД ТОТ ЖЕ СТИЛЬ)
 function showLifeArchive() {
-    let lifeText = `\n========================================\nЛИЧНЫЙ АРХИВ // ARCHIWUM OSOBISTE\n========================================\n\n`;
-    LIFE_ARCHIVE.forEach((l, i) => { lifeText += `[${String(i+1).padStart(2,"0")}] ${l.id}\n     ${l.title}\n     ЛОКАЦИЯ: ${l.location}\n     ДАТА: ${l.date}\n\n`; });
-    lifeText += "Команда: open [ID]\n"; playView(lifeText);
+    output.innerHTML = ""; 
+    appendText(`\n========================================\nЛИЧНЫЙ АРХИВ // ARCHIWUM OSOBISTE\n========================================\n`, () => {
+        
+        LIFE_ARCHIVE.forEach((l, i) => {
+            const row = document.createElement("div");
+            row.className = "list-row";
+
+            const thumb = document.createElement("div");
+            thumb.className = "list-thumb";
+
+            if (l.image) {
+                const img = document.createElement("img");
+                img.src = l.image;
+                thumb.appendChild(img);
+            } else {
+                thumb.classList.add("thumb-secret");
+                thumb.innerHTML = "NO<br>DATA";
+            }
+
+            const textDiv = document.createElement("div");
+            textDiv.style.whiteSpace = "pre-wrap";
+            textDiv.textContent = `[${String(i+1).padStart(2,"0")}] ${l.id}\n${l.title} // ${l.date}\nЛОКАЦИЯ: ${l.location}`;
+
+            row.appendChild(thumb);
+            row.appendChild(textDiv);
+            output.appendChild(row);
+        });
+
+        const footer = document.createElement("div");
+        footer.textContent = `\nКоманда: open [ID] для просмотра.\n`;
+        output.appendChild(footer);
+        
+        scrollTerminal();
+        promptLine.style.display = "flex";
+        inputField.focus();
+    }, 10);
 }
 
 function getPublicFileCount() { return PROJECTS.length + LIFE_ARCHIVE.length + Object.keys(NOTES).length + 2; }
@@ -788,10 +889,24 @@ function openTarget(target) {
     if (normalized === "story" || normalized === "01") { playView(MAIN_STORY); return; }
     if (normalized === "story2" || normalized === "02" || normalized === "trasa_222") { playView(STORY_2); return; }
     if (normalized === "notes" || normalized === "03") { playView(IMMIGRANT_NOTES); return; }
+    
     const foundProject = PROJECTS.find(p => p.id.toLowerCase() === normalized);
-    if (foundProject) { playView(`\n========================================\n${foundProject.title}\n========================================\nГОД: ${foundProject.year}\nСТАТУС: ${foundProject.status}\n\n${foundProject.description}\n`, () => { appendImage(foundProject.image, foundProject.title, foundProject.year, foundProject.status); }); return; }
+    if (foundProject) { 
+        playView(`\n========================================\n${foundProject.title}\n========================================\nГОД: ${foundProject.year}\nСТАТУС: ${foundProject.status}\n\n${foundProject.description}\n`, () => { 
+            if (foundProject.image) {
+                appendImage(foundProject.image, foundProject.title, foundProject.year, foundProject.status); 
+            } else {
+                printDroid("Медиафайлы засекречены. Отказано в доступе. // Pliki tajne. Brak dostępu.", "error", true);
+            }
+        }); 
+        return; 
+    }
+    
     const foundLife = LIFE_ARCHIVE.find(l => l.id.toLowerCase() === normalized);
-    if (foundLife) { playView(`\n========================================\n${foundLife.title}\n========================================\nЛОКАЦИЯ: ${foundLife.location}\nДАТА: ${foundLife.date}\n`, () => { appendImage(foundLife.image, foundLife.title, foundLife.location, foundLife.date); }); return; }
+    if (foundLife) { playView(`\n========================================\n${foundLife.title}\n========================================\nЛОКАЦИЯ: ${foundLife.location}\nДАТА: ${foundLife.date}\n`, () => { 
+        if(foundLife.image) appendImage(foundLife.image, foundLife.title, foundLife.location, foundLife.date); 
+    }); return; }
+    
     const hidden = HIDDEN_FILES[target.toUpperCase()];
     if (hidden) {
         if (!archiveUnlocked) { playView(`\nДОСТУП ЗАПРЕЩЕН. // ODMOWA DOSTĘPU.\nФАЙЛ: ${target}\nУРОВЕНЬ БЕЗОПАСНОСТИ: ROOT\n`, () => printDroid("Сюда нельзя. // Zakaz wjazdu.", "error", true)); return; }
