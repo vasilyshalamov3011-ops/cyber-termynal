@@ -83,9 +83,45 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
 .cyber-container::-webkit-scrollbar-thumb { background: #005d19; }
 
 #main-terminal { flex: 1; max-width: 900px; display: flex; flex-direction: column; }
-#side-terminal { width: 320px; font-size: 11px; color: #008f11; padding: 20px; }
+
+/* ОБНОВЛЕННЫЙ БОКОВОЙ ТЕРМИНАЛ */
+#side-terminal { 
+    width: 320px; 
+    font-size: 11px; 
+    color: #008f11; 
+    padding: 20px; 
+    display: flex;
+    flex-direction: column;
+}
+
+#sys-log-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Логи прилипают к низу и ползут вверх */
+}
+
+#sys-output { 
+    white-space: pre-wrap; 
+    word-break: break-all; 
+    opacity: 0.8; 
+}
+
+#hardware-monitor {
+    border-top: 1px dashed rgba(0,255,65,.3);
+    margin-top: 15px;
+    padding-top: 15px;
+    height: 110px;
+    flex-shrink: 0;
+    font-family: monospace;
+    line-height: 1.6;
+}
+.hw-bar { color: #00ff41; }
+.hw-alert { color: #ff003c; animation: blink 1s infinite; font-weight: bold; }
+
+/* Main Terminal Elements */
 #output { white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px; padding-bottom: 15px; flex-grow: 1; }
-#sys-output { white-space: pre-wrap; word-break: break-all; opacity: 0.8; }
 
 #prompt-line { display: none; align-items: center; gap: 8px; width: 100%; padding-top: 10px; border-top: 1px dashed rgba(0,255,65,.3); margin-top: auto; }
 #prompt-label { flex-shrink: 0; }
@@ -207,10 +243,21 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
         </div>
     </div>
     
-    <!-- Side Log Terminal -->
+    <!-- Side Log Terminal (РАЗДЕЛЕННЫЙ) -->
     <div class="cyber-container" id="side-terminal">
-        <div style="border-bottom: 1px solid #00ff41; margin-bottom: 10px; padding-bottom: 5px;">SYS.MONITOR // NODE 539A</div>
-        <div id="sys-output"></div>
+        <div style="border-bottom: 1px solid #00ff41; margin-bottom: 10px; padding-bottom: 5px; flex-shrink: 0;">SYS.MONITOR // NODE 539A</div>
+        
+        <div id="sys-log-container">
+            <div id="sys-output"></div>
+        </div>
+
+        <div id="hardware-monitor">
+            <div style="color: #ffa600; font-weight: bold; margin-bottom: 8px;">[ HARDWARE STATUS ]</div>
+            <div>CPU LOAD : <span id="cpu-bar" class="hw-bar">[██████░░░░] 60%</span></div>
+            <div>RAM ALLOC: <span id="ram-bar" class="hw-bar">[████░░░░░░] 40%</span></div>
+            <div>NET UPLINK: <span class="blink-text" style="color: #00ff41;">SECURE // ENCRYPTED</span></div>
+            <div>CORE TEMP: <span id="temp-val" class="hw-bar">42°C</span></div>
+        </div>
     </div>
 </div>
 
@@ -226,12 +273,13 @@ const bootScreen = document.getElementById("boot-screen");
 const mainTerminal = document.getElementById("main-terminal");
 
 /* =========================================================
-   SIDE LOG ENGINE
+   SIDE LOG ENGINE (БЕЖИТ СНИЗУ ВВЕРХ)
    ========================================================= */
 const logFragments = [
     "CHK_MEM 0x00F8A...", "NET_PING: 34ms", "AUTH_BYPASS_TRY: NULL", 
     "PROXY_ROUTE: GD_01", "ODSTRZAL_SYS: IDLE", "ENCRYPT_LEVEL: 256bit", 
-    "J_SILVER_TRACE: NOT_FOUND", "USER_SIG: V.SHALAMOV", "SYNC_DATA_LINK..."
+    "J_SILVER_TRACE: NOT_FOUND", "USER_SIG: V.SHALAMOV", "SYNC_DATA_LINK...",
+    "SCAN_SECTOR_7...", "FIREWALL_STATE: ON", "OVERRIDE_CMD: FAIL"
 ];
 setInterval(() => {
     if(bootScreen.style.display !== "none") return;
@@ -239,8 +287,35 @@ setInterval(() => {
     const hash = Math.floor(Math.random()*9999999).toString(16).toUpperCase();
     p.textContent = `> ${logFragments[Math.floor(Math.random() * logFragments.length)]} [${hash}]`;
     sysOutput.appendChild(p);
-    if(sysOutput.childNodes.length > 25) sysOutput.removeChild(sysOutput.firstChild);
+    
+    // Увеличили лимит до 45 строк, чтобы заполнить весь экран
+    if(sysOutput.childNodes.length > 45) sysOutput.removeChild(sysOutput.firstChild);
 }, 1200);
+
+/* =========================================================
+   HARDWARE MONITOR ENGINE
+   ========================================================= */
+setInterval(() => {
+    if(bootScreen.style.display !== "none") return;
+    
+    const cpu = Math.floor(Math.random() * 50) + 30; // 30-80%
+    const ram = Math.floor(Math.random() * 30) + 50; // 50-80%
+    const temp = Math.floor(Math.random() * 15) + 40; // 40-55C
+
+    const drawBar = (val) => {
+        const filled = Math.round(val / 10);
+        const empty = 10 - filled;
+        return '[' + '█'.repeat(filled) + '░'.repeat(empty) + '] ' + String(val).padStart(2, '0') + '%';
+    };
+
+    const tempEl = document.getElementById('temp-val');
+    tempEl.textContent = temp + '°C';
+    if (temp > 50) tempEl.className = "hw-alert"; // Красная тревога при > 50С
+    else tempEl.className = "hw-bar";
+
+    document.getElementById('cpu-bar').textContent = drawBar(cpu);
+    document.getElementById('ram-bar').textContent = drawBar(ram);
+}, 1500);
 
 /* =========================================================
    JOHNNY GHOST PROTOCOL 
@@ -314,7 +389,7 @@ function printLine(text) {
     scrollTerminal();
 }
 
-function typeText(text, callback, speed = 25) {
+function typeText(text, callback, speed = 15) {
     let i = 0;
     isTyping = true;
     const span = document.createElement("span");
@@ -474,7 +549,7 @@ I on wierzy. Nie ma w tym nic dziwnego.
 Człowiek wierzy w to, w co musi wierzyć.
 
 Особенно когда дома ждать больше нечего.
-Zwłaszcza gdy w domu не ma już na co czekać.
+Zwłaszcza gdy w domu nie ma już na co czekać.
 
 Картинка не показывает очередь в больницу.
 Obrazek nie pokazuje kolejki do szpitala.
@@ -770,83 +845,43 @@ function handleCommand(cmd, rawInput) {
     }
 }
 
-// НОВАЯ ФУНКЦИЯ ПРОЕКТОВ (С МИНИАТЮРАМИ И ЗАГЛУШКАМИ)
 function showProjects() {
     output.innerHTML = ""; 
     appendText(`\n========================================\nАРХИВ ПРОЕКТОВ // ARCHIWUM PROJEKTÓW\n========================================\n`, () => {
-        
         PROJECTS.forEach((p, i) => {
-            const row = document.createElement("div");
-            row.className = "list-row";
-
-            const thumb = document.createElement("div");
-            thumb.className = "list-thumb";
-
+            const row = document.createElement("div"); row.className = "list-row";
+            const thumb = document.createElement("div"); thumb.className = "list-thumb";
             if (p.image) {
-                const img = document.createElement("img");
-                img.src = p.image;
-                thumb.appendChild(img);
+                const img = document.createElement("img"); img.src = p.image; thumb.appendChild(img);
             } else {
-                thumb.classList.add("thumb-secret");
-                thumb.innerHTML = "TOP<br>SECRET";
+                thumb.classList.add("thumb-secret"); thumb.innerHTML = "TOP<br>SECRET";
             }
-
-            const textDiv = document.createElement("div");
-            textDiv.style.whiteSpace = "pre-wrap";
+            const textDiv = document.createElement("div"); textDiv.style.whiteSpace = "pre-wrap";
             textDiv.textContent = `[${String(i+1).padStart(2,"0")}] ${p.id}\n${p.title} // ${p.year}\n${p.status}`;
-
-            row.appendChild(thumb);
-            row.appendChild(textDiv);
-            output.appendChild(row);
+            row.appendChild(thumb); row.appendChild(textDiv); output.appendChild(row);
         });
-
-        const footer = document.createElement("div");
-        footer.textContent = `\nКоманда: open [ID] (например: open honda_vfr800) для полного отчета.\n`;
-        output.appendChild(footer);
-        
-        scrollTerminal();
-        promptLine.style.display = "flex";
-        inputField.focus();
+        const footer = document.createElement("div"); footer.textContent = `\nКоманда: open [ID] (например: open honda_vfr800) для полного отчета.\n`; output.appendChild(footer);
+        scrollTerminal(); promptLine.style.display = "flex"; inputField.focus();
     }, 10);
 }
 
-// НОВАЯ ФУНКЦИЯ ЛИЧНОГО АРХИВА (ПОД ТОТ ЖЕ СТИЛЬ)
 function showLifeArchive() {
     output.innerHTML = ""; 
     appendText(`\n========================================\nЛИЧНЫЙ АРХИВ // ARCHIWUM OSOBISTE\n========================================\n`, () => {
-        
         LIFE_ARCHIVE.forEach((l, i) => {
-            const row = document.createElement("div");
-            row.className = "list-row";
-
-            const thumb = document.createElement("div");
-            thumb.className = "list-thumb";
-
+            const row = document.createElement("div"); row.className = "list-row";
+            const thumb = document.createElement("div"); thumb.className = "list-thumb";
             if (l.image) {
-                const img = document.createElement("img");
-                img.src = l.image;
-                thumb.appendChild(img);
+                const img = document.createElement("img"); img.src = l.image; thumb.appendChild(img);
             } else {
-                thumb.classList.add("thumb-secret");
-                thumb.innerHTML = "NO<br>DATA";
+                thumb.classList.add("thumb-secret"); thumb.innerHTML = "NO<br>DATA";
             }
-
-            const textDiv = document.createElement("div");
-            textDiv.style.whiteSpace = "pre-wrap";
+            const textDiv = document.createElement("div"); textDiv.style.whiteSpace = "pre-wrap";
             textDiv.textContent = `[${String(i+1).padStart(2,"0")}] ${l.id}\n${l.title} // ${l.date}\nЛОКАЦИЯ: ${l.location}`;
-
-            row.appendChild(thumb);
-            row.appendChild(textDiv);
-            output.appendChild(row);
+            row.appendChild(thumb); row.appendChild(textDiv); output.appendChild(row);
         });
-
-        const footer = document.createElement("div");
-        footer.textContent = `\nКоманда: open [ID] для просмотра.\n`;
-        output.appendChild(footer);
-        
-        scrollTerminal();
-        promptLine.style.display = "flex";
-        inputField.focus();
+        const footer = document.createElement("div"); footer.textContent = `\nКоманда: open [ID] для просмотра.\n`; output.appendChild(footer);
+        scrollTerminal(); promptLine.style.display = "flex"; inputField.focus();
     }, 10);
 }
 
@@ -893,11 +928,8 @@ function openTarget(target) {
     const foundProject = PROJECTS.find(p => p.id.toLowerCase() === normalized);
     if (foundProject) { 
         playView(`\n========================================\n${foundProject.title}\n========================================\nГОД: ${foundProject.year}\nСТАТУС: ${foundProject.status}\n\n${foundProject.description}\n`, () => { 
-            if (foundProject.image) {
-                appendImage(foundProject.image, foundProject.title, foundProject.year, foundProject.status); 
-            } else {
-                printDroid("Медиафайлы засекречены. Отказано в доступе. // Pliki tajne. Brak dostępu.", "error", true);
-            }
+            if (foundProject.image) { appendImage(foundProject.image, foundProject.title, foundProject.year, foundProject.status); } 
+            else { printDroid("Медиафайлы засекречены. Отказано в доступе. // Pliki tajne. Brak dostępu.", "error", true); }
         }); 
         return; 
     }
