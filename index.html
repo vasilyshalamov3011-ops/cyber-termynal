@@ -99,7 +99,7 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end; /* Логи прилипают к низу и ползут вверх */
+    justify-content: flex-end; 
 }
 
 #sys-output { 
@@ -142,7 +142,7 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
 .archive-link:hover { background: #00ff41; color: #000; }
 
 /* =========================================================
-   ODSTRZAŁ DROID UI
+   ODSTRZAŁ DROID UI & GLITCH ANIMATION
    ========================================================= */
 .droid-message { 
     display: flex; 
@@ -158,6 +158,7 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
     height: 55px; 
     object-fit: contain;
     filter: drop-shadow(0 0 5px rgba(0,255,65,0.4));
+    transition: transform 0.1s ease;
 }
 .droid-text { 
     color: #00ff41; 
@@ -172,6 +173,20 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
     text-shadow: 0 0 6px rgba(255, 166, 0, 0.6); 
     font-size: 12px;
     letter-spacing: 1px;
+}
+
+/* Эффект зуда (глитч при генерации ответа) */
+.glitch-anim {
+    animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+    filter: drop-shadow(0 0 8px rgba(0,255,65,0.8)) hue-rotate(15deg);
+}
+@keyframes glitch-skew {
+    0% { transform: translate(0) skew(0deg); }
+    20% { transform: translate(-2px, 1px) skew(2deg); }
+    40% { transform: translate(2px, -1px) skew(-2deg); }
+    60% { transform: translate(-1px, 2px) skew(1deg); }
+    80% { transform: translate(1px, -2px) skew(-1deg); }
+    100% { transform: translate(0) skew(0deg); }
 }
 
 /* Стили для миниатюр списков */
@@ -243,7 +258,7 @@ body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shad
         </div>
     </div>
     
-    <!-- Side Log Terminal (РАЗДЕЛЕННЫЙ) -->
+    <!-- Side Log Terminal -->
     <div class="cyber-container" id="side-terminal">
         <div style="border-bottom: 1px solid #00ff41; margin-bottom: 10px; padding-bottom: 5px; flex-shrink: 0;">SYS.MONITOR // NODE 539A</div>
         
@@ -273,7 +288,7 @@ const bootScreen = document.getElementById("boot-screen");
 const mainTerminal = document.getElementById("main-terminal");
 
 /* =========================================================
-   SIDE LOG ENGINE (БЕЖИТ СНИЗУ ВВЕРХ)
+   SIDE LOG ENGINE 
    ========================================================= */
 const logFragments = [
     "CHK_MEM 0x00F8A...", "NET_PING: 34ms", "AUTH_BYPASS_TRY: NULL", 
@@ -287,8 +302,6 @@ setInterval(() => {
     const hash = Math.floor(Math.random()*9999999).toString(16).toUpperCase();
     p.textContent = `> ${logFragments[Math.floor(Math.random() * logFragments.length)]} [${hash}]`;
     sysOutput.appendChild(p);
-    
-    // Увеличили лимит до 45 строк, чтобы заполнить весь экран
     if(sysOutput.childNodes.length > 45) sysOutput.removeChild(sysOutput.firstChild);
 }, 1200);
 
@@ -297,10 +310,9 @@ setInterval(() => {
    ========================================================= */
 setInterval(() => {
     if(bootScreen.style.display !== "none") return;
-    
-    const cpu = Math.floor(Math.random() * 50) + 30; // 30-80%
-    const ram = Math.floor(Math.random() * 30) + 50; // 50-80%
-    const temp = Math.floor(Math.random() * 15) + 40; // 40-55C
+    const cpu = Math.floor(Math.random() * 50) + 30;
+    const ram = Math.floor(Math.random() * 30) + 50;
+    const temp = Math.floor(Math.random() * 15) + 40;
 
     const drawBar = (val) => {
         const filled = Math.round(val / 10);
@@ -310,7 +322,7 @@ setInterval(() => {
 
     const tempEl = document.getElementById('temp-val');
     tempEl.textContent = temp + '°C';
-    if (temp > 50) tempEl.className = "hw-alert"; // Красная тревога при > 50С
+    if (temp > 50) tempEl.className = "hw-alert"; 
     else tempEl.className = "hw-bar";
 
     document.getElementById('cpu-bar').textContent = drawBar(cpu);
@@ -325,7 +337,6 @@ const ghostImg = document.getElementById("johnny-img");
 
 function spawnGhost(type) {
     if (ghost.style.display === "block") return; 
-
     if (type === 'scan') ghostImg.src = "johnny2.png"; 
     else ghostImg.src = "johnny1.png"; 
 
@@ -376,7 +387,7 @@ const USER_PROFILE = {
 };
 
 /* =========================================================
-   SYSTEM LOGIC & NEW TYPING ENGINE
+   SYSTEM LOGIC & TYPING ENGINE
    ========================================================= */
 let gameActive = false; let hackStage = 0; let secretCode = null; let archiveUnlocked = false;
 let commandHistory = []; let historyIndex = -1;
@@ -422,7 +433,7 @@ function playView(text, callback = null, speed = 15) {
 }
 
 /* =========================================================
-   ODSTRZAŁ CORE 
+   ODSTRZAŁ CORE (С УПРАВЛЕНИЕМ ПАТРОНАМИ И ГЛИТЧЕМ)
    ========================================================= */
 const DROID_IMGS = {
     error: { src: "panika.png", name: "ODSTRZAŁ // PANIKA" },
@@ -444,6 +455,7 @@ const G01_MESSAGES = [
     { text: "Что-то не так... // Coś jest nie tak...", mood: "error" }
 ];
 let g01Enabled = true; let g01Busy = false; let audioContext = null;
+let currentPatron = "happy"; // Текущий ИИ-патрон (по умолчанию KOZAK)
 
 function initAudio() {
     if (!audioContext) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioContext = new AudioContext(); }
@@ -467,7 +479,7 @@ function g01Beep(type = "beep") {
 
 function scrollTerminal() { if (mainTerminal) mainTerminal.scrollTop = mainTerminal.scrollHeight; }
 
-function printDroid(text = null, mood = "idle", sound = true) {
+function printDroid(text = null, mood = "idle", sound = true, isGlitching = false) {
     if (!g01Enabled || g01Busy || isTyping) return; 
     g01Busy = true;
     
@@ -483,7 +495,6 @@ function printDroid(text = null, mood = "idle", sound = true) {
     img.alt = charData.name;
     
     const textContainer = document.createElement("div");
-    
     const nameSpan = document.createElement("span");
     nameSpan.className = "droid-name";
     nameSpan.textContent = `[ ${charData.name} ]`;
@@ -493,7 +504,6 @@ function printDroid(text = null, mood = "idle", sound = true) {
     
     textContainer.appendChild(nameSpan);
     textContainer.appendChild(textSpan);
-    
     droidDiv.appendChild(img);
     droidDiv.appendChild(textContainer);
     output.appendChild(droidDiv);
@@ -501,6 +511,8 @@ function printDroid(text = null, mood = "idle", sound = true) {
     let i = 0;
     isTyping = true;
     const msg = text || beep;
+    
+    if (isGlitching) img.classList.add("glitch-anim");
     
     function run() {
         if (i < msg.length) {
@@ -510,19 +522,50 @@ function printDroid(text = null, mood = "idle", sound = true) {
         } else {
             isTyping = false;
             g01Busy = false;
+            if (isGlitching) img.classList.remove("glitch-anim");
         }
     }
     run();
 }
 
+/* =========================================================
+   СВЯЗЬ С GEMINI ЧЕРЕЗ CLOUDFLARE WORKER
+   ========================================================= */
+async function askSmartDroid(question) {
+    const WORKER_URL = "https://odstrzal-core.vasilyshalamov3011.workers.dev";
+    
+    promptLine.style.display = "none";
+    printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);
+    
+    try {
+        const response = await fetch(WORKER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: question, patron: currentPatron })
+        });
+        
+        const data = await response.json();
+        const reply = data.reply || "ОШИБКА ДАННЫХ // BŁĄD DANYCH";
+        
+        appendText(`\n[ОТВЕТ АГЕНТА]:\n`, () => {
+            printDroid(reply, currentPatron, true, true);
+        });
+
+    } catch (error) {
+        appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {
+            printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);
+        });
+    }
+}
+
 function triggerRandomDroid() {
     if (!g01Enabled || bootScreen.style.display !== "none" || promptLine.style.display === "none" || isTyping || Math.random() > .45) return;
     const data = G01_MESSAGES[Math.floor(Math.random() * G01_MESSAGES.length)];
-    printDroid(data.text, data.mood, true);
+    printDroid(data.text, data.mood, true, false);
 }
 
 /* =========================================================
-   TEXT ARCHIVES
+   TEXT ARCHIVES (ПОЛНЫЕ ОРИГИНАЛЬНЫЕ ТЕКСТЫ)
    ========================================================= */
 const MAIN_STORY = `
 ========================================
@@ -677,8 +720,8 @@ Ale wiesz, od czego naprawdę zjeżyły mi się włosy na plecach, kiedy zaczą�
 Tutaj, prosto w moim mieście, zaczyna się trasa 222. Kropka w kropkę. Ten sam znak z pobocza...
 
 ПРОДОЛЖЕНИЕ СЛЕДУЕТ // CIĄG DALSZY NASTĄPI
-Это начало большой книги об очень интересном пути ♤
-To początek wielkiej książki o bardzo ciekawej drodze ♤
+Это начало большой книги об очень интересном пути 
+To początek wielkiej książki o bardzo ciekawej drodze 
 
 ========================================
 КОНЕЦ ИСТОРИИ // KONIEC HISTORII
@@ -732,7 +775,7 @@ bootScreen.addEventListener("click", () => {
     setTimeout(() => { bootScreen.style.display = "none"; }, 700);
     typeText(
 `SYS_INIT: ЗАЩИЩЕННЫЙ КАНАЛ // KANAŁ ZABEZPIECZONY v9.4
-ПОДКЛЮЧЕНИЕ К УЗЛУ // ŁĄCZENIE Z WĘZŁEM....... [OK]
+ПОДКЛЮЧЕНИЕ К УЗЛУ // ŁĄCZENIE Z WĘЗŁEM....... [OK]
 ПРОВЕРКА АРХИВА // WERYFIKACJA ARCHIWUM....... [OK]
 МОДУЛЬ ODSTRZAŁ // MODUŁ ODSTRZAŁ............. [OK]
 
@@ -745,7 +788,7 @@ bootScreen.addEventListener("click", () => {
         promptLine.style.display = "flex"; inputField.focus();
         showHomeMenu(false);
         startJohnnyBug(); 
-        setTimeout(() => { printDroid("Готов. // Gotowy.", "happy", true); }, 700);
+        setTimeout(() => { printDroid("Готов. // Gotowy.", "happy", true, false); }, 700);
         setInterval(triggerRandomDroid, 45000);
     }, 15);
 });
@@ -774,14 +817,16 @@ search      - поиск
 status      - система
 contact     - контакты
 odstrzal    - статус ИИ-патронов
+patron [имя]- сменить ИИ-патрона (kozak, mozg, panika, smutek)
 help        - все команды
 ========================================
+Любой другой текст будет отправлен ИИ-модулю для общения!
 `;
     if (clearScreen) playView(menuText);
     else appendText(menuText);
 }
 
-const COMMANDS = ["home","story","story2","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal"];
+const COMMANDS = ["home","story","story2","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal","patron"];
 
 inputField.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
@@ -805,10 +850,10 @@ function handleCommand(cmd, rawInput) {
     const parts = rawInput.trim().split(/\s+/); const action = parts[0].toLowerCase(); const arg = parts.slice(1).join(" ");
     switch(action) {
         case "home": showHomeMenu(true); break;
-        case "story": playView(MAIN_STORY, () => { printDroid("История открыта. // Historia otwarta.", "curious", true); }); break;
+        case "story": playView(MAIN_STORY, () => { printDroid("История открыта. // Historia otwarta.", "curious", true, false); }); break;
         case "story2": 
             playView(STORY_2, () => { 
-                printDroid("Сильная история. Мороз по коже. // Mocna historia. Ciarki na plecach.", "curious", true); 
+                printDroid("Сильная история. Мороз по коже. // Mocna historia. Ciarki na plecach.", "curious", true, false); 
                 setTimeout(() => {
                     const gazelleImg = appendImage("gazelle.jpg", "ФОТОФИКСАЦИЯ // FOTO-DOWÓD", "ТАЙГА // TAJGA", "УЛИКА // DOWÓD RZECZOWY");
                     setTimeout(() => {
@@ -828,20 +873,31 @@ function handleCommand(cmd, rawInput) {
         case "search": if (!arg) { appendText("\nКоманда: search [слово]\n"); } else { searchArchive(arg); } break;
         case "open": if (!arg) { appendText("\nКоманда: open [ID]\n"); } else { openTarget(arg); } break;
         case "contact": showContact(); break;
-        case "help": playView("\nКОМАНДЫ: home, story, story2, notes, projects, life, files, search, open, scan, hack, contact, clear\n"); break;
-        case "clear": output.innerHTML = ""; appendText("", () => printDroid("Экран очищен. // Ekran wyczyszczony.", "idle", true)); break;
+        case "help": playView("\nКОМАНДЫ: home, story, story2, notes, projects, life, files, search, open, scan, hack, contact, clear, patron [имя]\n"); break;
+        case "clear": output.innerHTML = ""; appendText("", () => printDroid("Экран очищен. // Ekran wyczyszczony.", "idle", true, false)); break;
         case "status": playView("\nСИСТЕМА: СТАБИЛЬНА // SYSTEM: STABILNY\nУЗЕЛ: 539A\n"); break;
         case "whoami": playView(`\nПРОФИЛЬ:\n${USER_PROFILE.name}\n${USER_PROFILE.location}\n`); break;
         case "about": playView(`\nДАННЫЕ ОБЪЕКТА:\n${USER_PROFILE.name}\n${USER_PROFILE.occupation.join(", ")}\n`); break;
         case "scan": runScan(); break;
         case "hack": startHack(); break;
         case "recover": recoverArchive(); break;
-        case "odstrzal": case "g01": case "droid": case "pet": appendText("", () => printDroid("Банда в сборе. // Ekipa w komplecie.", "happy", true)); break;
+        
+        // Управление ИИ-патронами
+        case "patron":
+            if (arg === "kozak") { currentPatron = "happy"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: KOZAK ]\n", () => printDroid("Готов жечь резину. // Dawaj.", currentPatron, true, true)); }
+            else if (arg === "mozg") { currentPatron = "scanning"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: MÓZG ]\n", () => printDroid("Системы аналитики запущены.", currentPatron, true, true)); }
+            else if (arg === "panika") { currentPatron = "error"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: PANIKA ]\n", () => printDroid("Зачем ты меня разбудил?!", currentPatron, true, true)); }
+            else if (arg === "smutek") { currentPatron = "idle"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: SMUTEK ]\n", () => printDroid("Опять работать...", currentPatron, true, true)); }
+            else { appendText("\nДоступные патроны: kozak, mozg, panika, smutek\nПример: patron kozak\n"); }
+            break;
+
+        case "odstrzal": case "g01": case "droid": case "pet": appendText("", () => printDroid("Банда в сборе. // Ekipa w komplecie.", "happy", true, false)); break;
         case "exit": output.innerHTML = ""; typeText("\nСЕССИЯ ЗАВЕРШЕНА. ОБНОВИТЕ СТРАНИЦУ.\n", () => { promptLine.style.display = "none"; scrollTerminal(); }); break;
+        
         default:
-            appendText(`Команда не распознана. // Komenda nieznaleziona.\n`, () => {
-                printDroid("Подозрительная команда.", "error", true);
-            });
+            // Всё остальное летит к нашему ИИ-агенту на Cloudflare
+            askSmartDroid(rawInput);
+            break;
     }
 }
 
@@ -901,8 +957,8 @@ function searchArchive(keyword) {
     LIFE_ARCHIVE.forEach(m => { if (JSON.stringify(m).toLowerCase().includes(query)) { searchText += `[MEMORY] ${m.id}\n`; results++; } });
     if (!results) { searchText += "НЕТ СОВПАДЕНИЙ. // BRAK WYNIKÓW.\n"; } else { searchText += `\nНАЙДЕНО РЕЗУЛЬТАТОВ: ${results}.\n`; }
     playView(searchText, () => {
-        if (results > 0) printDroid("Нашел! // Znalazłem!", "scanning", true);
-        else printDroid("Пусто. // Pusto.", "idle", true);
+        if (results > 0) printDroid("Нашел! // Znalazłem!", "scanning", true, false);
+        else printDroid("Пусто. // Pusto.", "idle", true, false);
     });
 }
 
@@ -929,7 +985,7 @@ function openTarget(target) {
     if (foundProject) { 
         playView(`\n========================================\n${foundProject.title}\n========================================\nГОД: ${foundProject.year}\nСТАТУС: ${foundProject.status}\n\n${foundProject.description}\n`, () => { 
             if (foundProject.image) { appendImage(foundProject.image, foundProject.title, foundProject.year, foundProject.status); } 
-            else { printDroid("Медиафайлы засекречены. Отказано в доступе. // Pliki tajne. Brak dostępu.", "error", true); }
+            else { printDroid("Медиафайлы засекречены. Отказано в доступе. // Pliki tajne. Brak dostępu.", "error", true, false); }
         }); 
         return; 
     }
@@ -941,7 +997,7 @@ function openTarget(target) {
     
     const hidden = HIDDEN_FILES[target.toUpperCase()];
     if (hidden) {
-        if (!archiveUnlocked) { playView(`\nДОСТУП ЗАПРЕЩЕН. // ODMOWA DOSTĘPU.\nФАЙЛ: ${target}\nУРОВЕНЬ БЕЗОПАСНОСТИ: ROOT\n`, () => printDroid("Сюда нельзя. // Zakaz wjazdu.", "error", true)); return; }
+        if (!archiveUnlocked) { playView(`\nДОСТУП ЗАПРЕЩЕН. // ODMOWA DOSTĘPU.\nФАЙЛ: ${target}\nУРОВЕНЬ БЕЗОПАСНОСТИ: ROOT\n`, () => printDroid("Сюда нельзя. // Zakaz wjazdu.", "error", true, false)); return; }
         playView(`\n========================================\n${hidden.title}\n========================================\n${hidden.content}\n`); return;
     }
     appendText(`\nОШИБКА: ОБЪЕКТ '${target}' НЕ НАЙДЕН.\n`);
@@ -963,7 +1019,7 @@ function showContact() {
 
 function runScan() { 
     playView("\nСКАНИРОВАНИЕ... // SKANOWANIE...\nОБНАРУЖЕНА АНОМАЛИЯ.\nУЗЕЛ: 539A\n", () => { 
-        printDroid("Я ищу... // Szukam...", "scanning", true);
+        printDroid("Я ищу... // Szukam...", "scanning", true, false);
         spawnGhost('scan'); 
     }); 
 }
@@ -972,7 +1028,7 @@ function startHack() {
     if(archiveUnlocked) { appendText("\nROOT ДОСТУП УЖЕ ОТКРЫТ.\n"); return; }
     gameActive = true; hackStage = 1; secretCode = Math.floor(Math.random() * 100);
     playView("\nПЕРЕХВАТ УПРАВЛЕНИЯ\nОбнаружен двузначный код.\nВВЕДИТЕ КОД (0-99):\n", () => { 
-        printDroid("Внимание.", "error", true); 
+        printDroid("Внимание.", "error", true, false); 
         spawnGhost('hack'); 
     });
 }
@@ -987,7 +1043,7 @@ function processHack(input) {
 function recoverArchive() {
     if (hackStage < 2) { appendText(`\nОШИБКА.\n`); return; }
     playView("\nВОССТАНОВЛЕНИЕ...\n", () => {
-        printDroid("Восстановление архива...", "scanning", true);
+        printDroid("Восстановление архива...", "scanning", true, false);
         setTimeout(() => { appendText("\nROOT ДОСТУП ОТКРЫТ.\n", () => { archiveUnlocked = true; hackStage = 3; }); }, 1500);
     });
 }
