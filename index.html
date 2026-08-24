@@ -531,35 +531,27 @@ function printDroid(text = null, mood = "idle", sound = true, isGlitching = fals
 /* =========================================================
    СВЯЗЬ С GEMINI ЧЕРЕЗ CLOUDFLARE WORKER
    ========================================================= */
-
-  async function askSmartDroid(question) {
+async function askSmartDroid(question) {
     const WORKER_URL = "https://odstrzal-core.vasilyshalamov3011.workers.dev";
     
     promptLine.style.display = "none";
     printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);
     
     try {
-        // Если пользователь написал специальную команду (например, "спор" или "debate"), включаем режим перепалки
-        const isDebate = question.toLowerCase().includes("спор") || question.toLowerCase().includes("debate");
-        
         const response = await fetch(WORKER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                message: question, 
-                patron: currentPatron,
-                mode: isDebate ? "debate" : "chat" 
-            })
+            body: JSON.stringify({ message: question, patron: currentPatron })
         });
         
-        const data = await response.json(); 
+        const data = await response.json();
         const reply = data.reply || "ОШИБКА ДАННЫХ // BŁĄD DANYCH";
         
         appendText(`\n[ОТВЕТ АГЕНТА]:\n`, () => {
             printDroid(reply, currentPatron, true, true);
         });
 
-    }.catch(error) {
+    } catch (error) {
         appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {
             printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);
         });
@@ -571,6 +563,7 @@ function triggerRandomDroid() {
     const data = G01_MESSAGES[Math.floor(Math.random() * G01_MESSAGES.length)];
     printDroid(data.text, data.mood, true, false);
 }
+
 /* =========================================================
    TEXT ARCHIVES (ПОЛНЫЕ ОРИГИНАЛЬНЫЕ ТЕКСТЫ)
    ========================================================= */
