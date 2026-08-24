@@ -536,17 +536,14 @@ async function askSmartDroid(question) {
     
     promptLine.style.display = "none";
     
-    // Врубаем статус поиска, спавним Джонни и кидаем грязные логи в терминал!
     printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);
-    spawnGhost('scan'); 
+    // ВЫРЕЗАЛИ ВЫЗОВ ДЖОННИ ОТСЮДА!
     printLine(`\n> UPLINK SECURE...`);
     printLine(`> ROUTING: GDAŃSK -> NODE_539A... [WAIT]`);
     
-    // Искусственная задержка от 2.5 до 4 секунд, чтобы кибердека "покряхтела"
     const fakeDelay = new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1500));
 
     try {
-        // Запускаем одновременно запрос к Гуглу и наш фейковый таймер ожидания
         const [response] = await Promise.all([
             fetch(WORKER_URL, {
                 method: "POST",
@@ -566,12 +563,12 @@ async function askSmartDroid(question) {
         });
 
     } catch (error) {
-        await fakeDelay; // Даже при сбое выдерживаем тяжелую паузу
+        await fakeDelay; 
         appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {
             printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);
         });
     }
-}
+}}
 
 /* =========================================================
    TEXT ARCHIVES (ПОЛНЫЕ ОРИГИНАЛЬНЫЕ ТЕКСТЫ)
