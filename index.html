@@ -535,33 +535,42 @@ async function askSmartDroid(question) {
     const WORKER_URL = "https://odstrzal-core.vasilyshalamov3011.workers.dev";
     
     promptLine.style.display = "none";
-    printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);
     
+    // Врубаем статус поиска, спавним Джонни и кидаем грязные логи в терминал!
+    printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);
+    spawnGhost('scan'); 
+    printLine(`\n> UPLINK SECURE...`);
+    printLine(`> ROUTING: GDAŃSK -> NODE_539A... [WAIT]`);
+    
+    // Искусственная задержка от 2.5 до 4 секунд, чтобы кибердека "покряхтела"
+    const fakeDelay = new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1500));
+
     try {
-        const response = await fetch(WORKER_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: question, patron: currentPatron })
-        });
+        // Запускаем одновременно запрос к Гуглу и наш фейковый таймер ожидания
+        const [response] = await Promise.all([
+            fetch(WORKER_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: question, patron: currentPatron })
+            }),
+            fakeDelay
+        ]);
         
         const data = await response.json();
         const reply = data.reply || "ОШИБКА ДАННЫХ // BŁĄD DANYCH";
+        
+        printLine(`> CONNECTION... [OK]`);
         
         appendText(`\n[ОТВЕТ АГЕНТА]:\n`, () => {
             printDroid(reply, currentPatron, true, true);
         });
 
     } catch (error) {
+        await fakeDelay; // Даже при сбое выдерживаем тяжелую паузу
         appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {
             printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);
         });
     }
-}
-
-function triggerRandomDroid() {
-    if (!g01Enabled || bootScreen.style.display !== "none" || promptLine.style.display === "none" || isTyping || Math.random() > .45) return;
-    const data = G01_MESSAGES[Math.floor(Math.random() * G01_MESSAGES.length)];
-    printDroid(data.text, data.mood, true, false);
 }
 
 /* =========================================================
