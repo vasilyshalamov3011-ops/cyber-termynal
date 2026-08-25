@@ -1,4 +1,6 @@
-<!DOCTYPE html>  <html lang="ru">    <head>    
+<!DOCTYPE html>  
+<html lang="ru">    
+<head>    
 <meta charset="UTF-8">    
 <meta name="viewport" content="width=device-width, initial-scale=1.0">    
 <title>Cyberdeck Archive // Vasilii Shalamov</title>    
@@ -8,7 +10,9 @@
    ========================================================= */    
 * { box-sizing: border-box; }    
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }    
-body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shadow: 0 0 6px rgba(0,255,65,.35); }  /* =========================================================  
+body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shadow: 0 0 6px rgba(0,255,65,.35); }  
+
+/* =========================================================  
 MATRIX & SCANLINES  
 ========================================================= */  
 #matrixCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .65; }  
@@ -16,7 +20,9 @@ MATRIX & SCANLINES
 position: fixed; inset: 0; z-index: 5; pointer-events: none;  
 background: repeating-linear-gradient(to bottom, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 2px, transparent 4px);  
 opacity: .45;  
-}  /* =========================================================
+}  
+
+/* =========================================================
 JOHNNY GHOST BUG
 ========================================================= */
 #johnny-ghost {
@@ -227,20 +233,26 @@ text-shadow: 0 0 5px #ff003c;
 </style>
 
 </head>    
-<body>  <!-- BOOT SCREEN -->  <div id="boot-screen">    
+<body>  
+
+<!-- BOOT SCREEN -->  
+<div id="boot-screen">    
     <div class="boot-title">СИСТЕМА ЗАБЛОКИРОВАНА // SYSTEM ZABLOKOWANY</div>    
     <div class="boot-subtitle">КИБЕРДЕКА АРХИВ // УЗЕЛ 539A</div>    
     <div class="boot-version">ARCHIVE OS v9.4 // ODSTRZAŁ CORE</div>    
     <div class="blink-text">&gt; НАЖМИТЕ ДЛЯ ЗАПУСКА // KLIKNIJ ABY URUCHOMIĆ &lt;</div>    
-</div>  <!-- MATRIX & GHOST -->  <canvas id="matrixCanvas"></canvas>  <div id="johnny-ghost"><img id="johnny-img" src="johnny1.png" alt="Johnny Ghost"></div>    
-<div class="scanlines"></div> 
+</div>  
 
-<!-- ФОНОВАЯ МУЗЫКА -->
-<audio id="bg-music" loop>
-    <source src="ambient.mp3" type="audio/mpeg">
-</audio>
+<!-- MATRIX & GHOST -->  
+<canvas id="matrixCanvas"></canvas>  
+<div id="johnny-ghost"><img id="johnny-img" src="johnny1.png" alt="Johnny Ghost"></div>    
+<div class="scanlines"></div>  
 
-<!-- DUAL UI WRAPPER -->  <div id="ui-wrapper">    
+<!-- ФОНОВАЯ МУЗЫКА (ДИНАМИЧЕСКИЙ SRC) -->
+<audio id="bg-music" loop></audio>
+
+<!-- DUAL UI WRAPPER -->  
+<div id="ui-wrapper">    
     <!-- Main Terminal -->    
     <div class="cyber-container" id="main-terminal">    
         <div id="output"></div>    
@@ -248,21 +260,26 @@ text-shadow: 0 0 5px #ff003c;
             <span id="prompt-label">user@cyber-terminal:~$</span>    
             <input id="input-field" type="text" spellcheck="false" autocomplete="off" autocapitalize="off">    
         </div>    
-    </div>  <!-- Side Log Terminal -->    
-<div class="cyber-container" id="side-terminal">    
-    <div style="border-bottom: 1px solid #00ff41; margin-bottom: 10px; padding-bottom: 5px; flex-shrink: 0;">SYS.MONITOR // NODE 539A</div>    <div id="sys-log-container">    
-    <div id="sys-output"></div>    
-</div>    
+    </div>  
 
-<div id="hardware-monitor">    
-    <div style="color: #ffa600; font-weight: bold; margin-bottom: 8px;">[ HARDWARE STATUS ]</div>    
-    <div>CPU LOAD : <span id="cpu-bar" class="hw-bar">[██████░░░░] 60%</span></div>    
-    <div>RAM ALLOC: <span id="ram-bar" class="hw-bar">[████░░░░░░] 40%</span></div>    
-    <div>NET UPLINK: <span class="blink-text" style="color: #00ff41;">SECURE // ENCRYPTED</span></div>    
-    <div>CORE TEMP: <span id="temp-val" class="hw-bar">42°C</span></div>    
-</div>
+    <!-- Side Log Terminal -->    
+    <div class="cyber-container" id="side-terminal">    
+        <div style="border-bottom: 1px solid #00ff41; margin-bottom: 10px; padding-bottom: 5px; flex-shrink: 0;">SYS.MONITOR // NODE 539A</div>    
+        <div id="sys-log-container">    
+            <div id="sys-output"></div>    
+        </div>    
 
-</div>  </div>  <script>    
+        <div id="hardware-monitor">    
+            <div style="color: #ffa600; font-weight: bold; margin-bottom: 8px;">[ HARDWARE STATUS ]</div>    
+            <div>CPU LOAD : <span id="cpu-bar" class="hw-bar">[██████░░░░] 60%</span></div>    
+            <div>RAM ALLOC: <span id="ram-bar" class="hw-bar">[████░░░░░░] 40%</span></div>    
+            <div>NET UPLINK: <span class="blink-text" style="color: #00ff41;">SECURE // ENCRYPTED</span></div>    
+            <div>CORE TEMP: <span id="temp-val" class="hw-bar">42°C</span></div>    
+        </div>
+    </div>  
+</div>  
+
+<script>    
 /* =========================================================    
    DOM ELEMENTS    
    ========================================================= */    
@@ -272,8 +289,30 @@ const inputField = document.getElementById("input-field");
 const promptLine = document.getElementById("prompt-line");    
 const bootScreen = document.getElementById("boot-screen");    
 const mainTerminal = document.getElementById("main-terminal");    
+
+/* =========================================================
+MUSIC CONTROLLER (ДИДЖЕЙ)
+========================================================= */
 const bgMusic = document.getElementById("bg-music");
-bgMusic.volume = 0.3;
+bgMusic.volume = 0.4;
+
+const TRACKS = {
+    main: "server_noise.m4a",
+    story1: "track_illusion.m4a",
+    story2: "track_trasa222.m4a",
+    story3: "track_stresstest.m4a"
+};
+
+function playTrack(trackKey) {
+    const newSrc = TRACKS[trackKey];
+    if (!newSrc) return;
+    
+    // Если этот трек уже загружен/играет, не прерываем его
+    if (bgMusic.src.includes(newSrc)) return; 
+    
+    bgMusic.src = newSrc;
+    bgMusic.play().catch(e => console.log("Аудио ждет клика", e));
+}
 
 /* =========================================================
 SIDE LOG ENGINE
@@ -365,7 +404,7 @@ setTimeout(triggerRandom, 15000);
 }
 
 /* =========================================================
-USER PROFILE
+USER PROFILE & DATABASES
 ========================================================= */
 const USER_PROFILE = {
 name: "ВАСИЛИЙ ШАЛАМОВ // VASILII SHALAMOV",
@@ -376,199 +415,33 @@ instagram: "https://www.instagram.com/vasilii_bnr34/",
 email: "vasilyshalamov3011@gmail.com"
 };
 
-/* =========================================================
-SYSTEM LOGIC & TYPING ENGINE
-========================================================= */
-let gameActive = false; let hackStage = 0; let secretCode = null; let archiveUnlocked = false;
-let commandHistory = []; let historyIndex = -1;
-let isTyping = false;
+const PROJECTS = [
+{ id: "HONDA_VFR800", title: "HONDA VFR 800", year: "2017", status: "Тюнинг // CUSTOM & TUNING", description: "Тюнинг и настройка Honda VFR 800. // Tuning Honda VFR 800.", image: "honda.jpg" },
+{ id: "VESPA_LX50", title: "VESPA LX50", year: "2025", status: "ЗАСЕКРЕЧЕНО // ŚCIŚLE TAJNE", description: "ДАННЫЕ ЗАСЕКРЕЧЕНЫ. ТРЕБУЕТСЯ ДОПУСК. // DANE UTAJNIONE. WYMAGANY DOSTĘP.", image: null },
+{ id: "DUCATI_MONSTER", title: "DUCATI MONSTER", year: "2021", status: "ЗАСЕКРЕЧЕНО // ŚCIŚLE TAJNE", description: "ДАННЫЕ ЗАСЕКРЕЧЕНЫ. ТРЕБУЕТСЯ ДОПУСК. // DANE UTAJNIONE. WYMAGANY DOSTĘP.", image: null }
+];
 
-function printLine(text) {
-const span = document.createElement("span");
-span.textContent = text;
-output.appendChild(span);
-scrollTerminal();
-}
+const LIFE_ARCHIVE = [
+{ id: "MEMORY_001", title: "MEMORY // 001", location: "ГДАНЬСК // GDAŃSK", date: "2026", image: null },
+{ id: "MEMORY_002", title: "MEMORY // 002", location: "ГАРАЖ // GARAŻ", date: "2026", image: null }
+];
 
-function typeText(text, callback, speed = 15) {
-let i = 0;
-isTyping = true;
-const span = document.createElement("span");
-output.appendChild(span);
-function run() {
-if (i < text.length) {
-span.textContent += text[i];
-if (text[i].trim() !== "" && i % 3 === 0) g01Beep("tik");
-i++; scrollTerminal(); setTimeout(run, speed);
-} else {
-isTyping = false;
-if (callback) callback();
-}
-}
-run();
-}
-
-function appendText(text, callback = null, speed = 15) {
-promptLine.style.display = "none";
-typeText(text, () => {
-promptLine.style.display = "flex";
-inputField.focus();
-if (callback) callback();
-}, speed);
-}
-
-function playView(text, callback = null, speed = 15) {
-output.innerHTML = "";
-appendText(text, callback, speed);
-}
-
-/* =========================================================
-ODSTRZAŁ CORE (С УПРАВЛЕНИЕМ ПАТРОНАМИ И ГЛИТЧЕМ)
-========================================================= */
-const DROID_IMGS = {
-error: { src: "panika.png", name: "ODSTRZAŁ // PANIKA" },
-scanning: { src: "mozg.png", name: "ODSTRZAŁ // MÓZG" },
-curious: { src: "mozg.png", name: "ODSTRZAŁ // MÓZG" },
-happy: { src: "kozak.png", name: "ODSTRZAŁ // KOZAK" },
-idle: { src: "smutek.png", name: "ODSTRZAŁ // SMUTEK" }
+const NOTES = {
+"001": "WORKSHOP LOG: Настройка Vespa LX50. // Regulacja Vespa LX50.",
+"002": "MIGRATION REALITY: Выбор места — это выбор компромиссов. // Wybór miejsca to wybór kompromisów."
 };
 
-const G01_BEEPS = ["bip", "beep", "boop", "biiip", "pip", "bop", "tik"];
-const G01_MESSAGES = [
-{ text: "Я ищу... // Szukam...", mood: "scanning" },
-{ text: "Подозрительная команда. // Podejrzana komenda.", mood: "error" },
-{ text: "Отлично. // Świetnie.", mood: "happy" },
-{ text: "Скукотища... // Nuda...", mood: "idle" },
-{ text: "Системы в норме, босс. // Systemy w normie, szefie.", mood: "happy" },
-{ text: "Я слежу за архивом. // Pilnuję archiwum.", mood: "scanning" },
-{ text: "Готов. // Gotowy.", mood: "happy" },
-{ text: "Что-то не так... // Coś jest nie tak...", mood: "error" }
-];
-let g01Enabled = true; let g01Busy = false; let audioContext = null;
-let currentPatron = "happy"; // Текущий ИИ-патрон (по умолчанию KOZAK)
-
-function initAudio() {
-if (!audioContext) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioContext = new AudioContext(); }
-if (audioContext && audioContext.state === "suspended") audioContext.resume();
-}
-
-function g01Beep(type = "beep") {
-if (!audioContext) return;
-try {
-const osc = audioContext.createOscillator(); const gain = audioContext.createGain();
-let freq = 620;
-switch(type) { case "bip": freq=760; break; case "boop": freq=420; break; case "biiip": freq=900; break; case "tik": freq=1000; break; }
-osc.type = "square"; osc.frequency.value = freq;
-gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-gain.gain.exponentialRampToValueAtTime(0.035, audioContext.currentTime + 0.015);
-gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.11);
-osc.connect(gain); gain.connect(audioContext.destination);
-osc.start(); osc.stop(audioContext.currentTime + 0.12);
-} catch(e) {}
-}
-
-function scrollTerminal() { if (mainTerminal) mainTerminal.scrollTop = mainTerminal.scrollHeight; }
-
-function printDroid(text = null, mood = "idle", sound = true, isGlitching = false) {
-if (!g01Enabled || g01Busy || isTyping) return;
-g01Busy = true;
-
-const beep = G01_BEEPS[Math.floor(Math.random() * G01_BEEPS.length)];    
-const charData = DROID_IMGS[mood] || DROID_IMGS.idle;    
-    
-const droidDiv = document.createElement("div");    
-droidDiv.className = "droid-message";    
-    
-const img = document.createElement("img");    
-img.className = "droid-img";    
-img.src = charData.src;    
-img.alt = charData.name;    
-    
-const textContainer = document.createElement("div");    
-const nameSpan = document.createElement("span");    
-nameSpan.className = "droid-name";    
-nameSpan.textContent = `[ ${charData.name} ]`;    
-    
-const textSpan = document.createElement("span");    
-textSpan.className = "droid-text";    
-    
-textContainer.appendChild(nameSpan);    
-textContainer.appendChild(textSpan);    
-droidDiv.appendChild(img);    
-droidDiv.appendChild(textContainer);    
-output.appendChild(droidDiv);    
-    
-let i = 0;    
-isTyping = true;    
-const msg = text || beep;    
-    
-if (isGlitching) img.classList.add("glitch-anim");    
-    
-function run() {    
-    if (i < msg.length) {    
-        textSpan.textContent += msg[i];    
-        if (msg[i].trim() !== "" && i % 3 === 0 && sound) g01Beep("tik");    
-        i++; scrollTerminal(); setTimeout(run, 15);    
-    } else {    
-        isTyping = false;    
-        g01Busy = false;    
-        if (isGlitching) img.classList.remove("glitch-anim");    
-    }    
-}    
-run();
-
-}
+const HIDDEN_FILES = {
+"539A": { title: "NODE_539A", content: "СИСТЕМА ДЕРЖИТ ТОЛЬКО ТЕХ, КТО СОГЛАСЕН ОСТАТЬСЯ.\nSYSTEM ZATRZYMUJE TYLKO TYCH, KTÓRZY ZGADZAJĄ SIĘ ZOSTAĆ.\n\nСТАТУС: РАЗБЛОКИРОВАН // STATUS: ODBLOKOWANE" }
+};
 
 /* =========================================================
-СВЯЗЬ С GEMINI ЧЕРЕЗ CLOUDFLARE WORKER
+TEXT ARCHIVES (РАССКАЗЫ)
 ========================================================= */
-async function askSmartDroid(question) {
-const WORKER_URL = "https://odstrzal-core.vasilyshalamov3011.workers.dev";
-
-promptLine.style.display = "none";    
-    
-printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);    
-// ВЫРЕЗАЛИ ВЫЗОВ ДЖОННИ ОТСЮДА!    
-printLine(`\n> UPLINK SECURE...`);    
-printLine(`> ROUTING: GDAŃSK -> NODE_539A... [WAIT]`);    
-    
-const fakeDelay = new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1500));    
-
-try {    
-    const [response] = await Promise.all([    
-        fetch(WORKER_URL, {    
-            method: "POST",    
-            headers: { "Content-Type": "application/json" },    
-            body: JSON.stringify({ message: question, patron: currentPatron })    
-        }),    
-        fakeDelay    
-    ]);    
-        
-    const data = await response.json();    
-    const reply = data.reply || "ОШИБКА ДАННЫХ // BŁĄD DANYCH";    
-        
-    printLine(`> CONNECTION... [OK]`);    
-        
-    appendText(`\n[ОТВЕТ АГЕНТА]:\n`, () => {    
-        printDroid(reply, currentPatron, true, true);    
-    });    
-
-} catch (error) {    
-    await fakeDelay;     
-    appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {    
-        printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);    
-    });    
-}
-
-}
-
-/* =========================================================
-TEXT ARCHIVES (ПОЛНЫЕ ОРИГИНАЛЬНЫЕ ТЕКСТЫ)
-========================================================= */
-const MAIN_STORY = `
-
-АНАТОМИЯ ГЛОБАЛЬНОГО РАЗВОДА
-ANATOMIA GLOBALN€GO O$ZUSTWA
+const STORY_01 = `
+[LOG_001] ИЛЛЮЗИЯ: Анатомия глобального развода
+[LOG_001] ILUZJA: Anatomia globalnego oszustwa
+=================================================
 
 Сначала человеку показывают страну.
 Najpierw pokazują kraj.
@@ -600,9 +473,7 @@ Nie pokazuje starca liczącego monety.
 Витрина показывает только результат. Она никогда не показывает причины.
 Witryna pokazuje tylko wynik. Nigdy nie pokazuje przyczyn.
 
-
 ---
-
 РИТУАЛ // RYTUAŁ
 
 Затем идет виза.
@@ -620,9 +491,7 @@ Ale bilet nie jest jeszcze kupiony.
 Дорогой вход заставляет приз казаться более ценным.
 Drogie wejście sprawia, że nagroda wydaje się cenniejsza.
 
-
 ---
-
 ИДЕАЛЬНАЯ ИЛЛЮЗИЯ // IDEALNA ILUZJA
 
 Никто не тащил тебя сюда силой. Ты сам заполнил анкету.
@@ -636,19 +505,12 @@ A kiedy gra zabiera ci wszystko, ktoś może powiedzieć: "Przecież sam tego ch
 
 Ей не нужны цепи. Ей нужна только надежда.
 Ona nie potrzebuje łańcuchów. Potrzebuje tylko nadziei.
-
-========================================
-КОНЕЦ ИСТОРИИ // KONIEC HISTORII
-
-Команды // Komendy:
-back       возврат в меню // powrót
-notes      заметки эмигранта // notatki
 `;
 
-const STORY_2 = `
-
-ТРАССА 222: ПОДСКАЗКИ ОТ ЖИЗНИ
-TRASA 222: ZNAKI OD ŻYCIA
+const STORY_02 = `
+[LOG_002] ВЫХОД: Трасса 222 и баги реальности
+[LOG_002] WYJŚCIE: Trasa 222 i błędy rzeczywistości
+=================================================
 
 Знаете, если реальность, в которой вы живете, стала как вода в стакане на северном полюсе — надо пробовать что-то менять.
 Wiecie, jeśli rzeczywistość, w której żyjecie, stała się jak woda w szklance na biegunie północnym — trzeba próbować coś zmienić.
@@ -732,7 +594,6 @@ story      первая часть // pierwsza część
 `;
 
 const STORY_3 = `
-
 СТРЕСС-ТЕСТ: КАК СИСТЕМА ФИЛЬТРУЕТ ЮНИТОВ
 STRESS-TEST: JAK SYSTEM FILTRUJE JEDNOSTKI
 
@@ -894,29 +755,200 @@ Przeprowadzka nie wymazuje pierwszego kraju. Nie możesz przekroczyć własnej p
 
 `;
 
-const PROJECTS = [
-{ id: "HONDA_VFR800", title: "HONDA VFR 800", year: "2017", status: "Тюнинг // CUSTOM & TUNING", description: "Тюнинг и настройка Honda VFR 800. // Tuning Honda VFR 800.", image: "honda.jpg" },
-{ id: "VESPA_LX50", title: "VESPA LX50", year: "2025", status: "ЗАСЕКРЕЧЕНО // ŚCIŚLE TAJNE", description: "ДАННЫЕ ЗАСЕКРЕЧЕНЫ. ТРЕБУЕТСЯ ДОПУСК. // DANE UTAJNIONE. WYMAGANY DOSTĘP.", image: null },
-{ id: "DUCATI_MONSTER", title: "DUCATI MONSTER", year: "2021", status: "ЗАСЕКРЕЧЕНО // ŚCIŚLE TAJNE", description: "ДАННЫЕ ЗАСЕКРЕЧЕНЫ. ТРЕБУЕТСЯ ДОПУСК. // DANE UTAJNIONE. WYMAGANY DOSTĘP.", image: null }
-];
+/* =========================================================
+SYSTEM LOGIC & TYPING ENGINE
+========================================================= */
+let gameActive = false; let hackStage = 0; let secretCode = null; let archiveUnlocked = false;
+let commandHistory = []; let historyIndex = -1;
+let isTyping = false;
 
-const LIFE_ARCHIVE = [
-{ id: "MEMORY_001", title: "MEMORY // 001", location: "ГДАНЬСК // GDAŃSK", date: "2026", image: null },
-{ id: "MEMORY_002", title: "MEMORY // 002", location: "ГАРАЖ // GARAŻ", date: "2026", image: null }
-];
+function printLine(text) {
+const span = document.createElement("span");
+span.textContent = text;
+output.appendChild(span);
+scrollTerminal();
+}
 
-const NOTES = {
-"001": "WORKSHOP LOG: Настройка Vespa LX50. // Regulacja Vespa LX50.",
-"002": "MIGRATION REALITY: Выбор места — это выбор компромиссов. // Wybór miejsca to wybór kompromisów."
+function typeText(text, callback, speed = 55) { 
+    let i = 0;
+    isTyping = true;
+    
+    const textSpan = document.createElement("span");
+    const cursorSpan = document.createElement("span");
+    
+    // Тот самый ретро-курсор
+    cursorSpan.className = "blink-text";
+    cursorSpan.textContent = "█"; 
+    
+    output.appendChild(textSpan);
+    output.appendChild(cursorSpan);
+    
+    function run() {
+        if (i < text.length) {
+            textSpan.textContent += text[i];
+            // Звук печати тоже замедлен
+            if (text[i].trim() !== "" && i % 3 === 0) g01Beep("tik");
+            i++; 
+            scrollTerminal(); 
+            setTimeout(run, speed);
+        } else {
+            cursorSpan.remove(); // Убираем квадрат, когда текст допечатался
+            isTyping = false;
+            if (callback) callback();
+        }
+    }
+    run();
+}
+
+function appendText(text, callback = null, speed = 55) {
+    promptLine.style.display = "none";
+    typeText(text, () => {
+        promptLine.style.display = "flex";
+        inputField.focus();
+        if (callback) callback();
+    }, speed);
+}
+
+function playView(text, callback = null, speed = 55) {
+output.innerHTML = "";
+appendText(text, callback, speed);
+}
+
+/* =========================================================
+ODSTRZAŁ CORE (С УПРАВЛЕНИЕМ ПАТРОНАМИ И ГЛИТЧЕМ)
+========================================================= */
+const DROID_IMGS = {
+error: { src: "panika.png", name: "ODSTRZAŁ // PANIKA" },
+scanning: { src: "mozg.png", name: "ODSTRZAŁ // MÓZG" },
+curious: { src: "mozg.png", name: "ODSTRZAŁ // MÓZG" },
+happy: { src: "kozak.png", name: "ODSTRZAŁ // KOZAK" },
+idle: { src: "smutek.png", name: "ODSTRZAŁ // SMUTEK" }
 };
 
-const HIDDEN_FILES = {
-"539A": { title: "NODE_539A", content: "СИСТЕМА ДЕРЖИТ ТОЛЬКО ТЕХ, КТО СОГЛАСЕН ОСТАТЬСЯ.\nSYSTEM ZATRZYMUJE TYLKO TYCH, KTÓRZY ZGADZAJĄ SIĘ ZOSTAĆ.\n\nСТАТУС: РАЗБЛОКИРОВАН // STATUS: ODBLOKOWANE" }
-};
+const G01_BEEPS = ["bip", "beep", "boop", "biiip", "pip", "bop", "tik"];
+let g01Enabled = true; let g01Busy = false; let audioContext = null;
+let currentPatron = "happy"; // Текущий ИИ-патрон (по умолчанию KOZAK)
 
+function initAudio() {
+if (!audioContext) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioContext = new AudioContext(); }
+if (audioContext && audioContext.state === "suspended") audioContext.resume();
+}
+
+function g01Beep(type = "beep") {
+if (!audioContext) return;
+try {
+const osc = audioContext.createOscillator(); const gain = audioContext.createGain();
+let freq = 620;
+switch(type) { case "bip": freq=760; break; case "boop": freq=420; break; case "biiip": freq=900; break; case "tik": freq=1000; break; }
+osc.type = "square"; osc.frequency.value = freq;
+gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.004, audioContext.currentTime + 0.015);
+gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.11);
+osc.connect(gain); gain.connect(audioContext.destination);
+osc.start(); osc.stop(audioContext.currentTime + 0.12);
+} catch(e) {}
+}
+
+function scrollTerminal() { if (mainTerminal) mainTerminal.scrollTop = mainTerminal.scrollHeight; }
+
+function printDroid(text = null, mood = "idle", sound = true, isGlitching = false) {
+if (!g01Enabled || g01Busy || isTyping) return;
+g01Busy = true;
+
+const beep = G01_BEEPS[Math.floor(Math.random() * G01_BEEPS.length)];    
+const charData = DROID_IMGS[mood] || DROID_IMGS.idle;    
+    
+const droidDiv = document.createElement("div");    
+droidDiv.className = "droid-message";    
+    
+const img = document.createElement("img");    
+img.className = "droid-img";    
+img.src = charData.src;    
+img.alt = charData.name;    
+    
+const textContainer = document.createElement("div");    
+const nameSpan = document.createElement("span");    
+nameSpan.className = "droid-name";    
+nameSpan.textContent = `[ ${charData.name} ]`;    
+    
+const textSpan = document.createElement("span");    
+textSpan.className = "droid-text";    
+    
+textContainer.appendChild(nameSpan);    
+textContainer.appendChild(textSpan);    
+droidDiv.appendChild(img);    
+droidDiv.appendChild(textContainer);    
+output.appendChild(droidDiv);    
+    
+let i = 0;    
+isTyping = true;    
+const msg = text || beep;    
+    
+if (isGlitching) img.classList.add("glitch-anim");    
+    
+function run() {    
+    if (i < msg.length) {    
+        textSpan.textContent += msg[i];    
+        if (msg[i].trim() !== "" && i % 3 === 0 && sound) g01Beep("tik");    
+        i++; scrollTerminal(); setTimeout(run, 35);    
+    } else {    
+        isTyping = false;    
+        g01Busy = false;    
+        if (isGlitching) img.classList.remove("glitch-anim");    
+    }    
+}    
+run();
+
+}
+
+/* =========================================================
+СВЯЗЬ С GEMINI ЧЕРЕЗ CLOUDFLARE WORKER
+========================================================= */
+async function askSmartDroid(question) {
+const WORKER_URL = "https://odstrzal-core.vasilyshalamov3011.workers.dev";
+
+promptLine.style.display = "none";    
+    
+printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);    
+printLine(`\n> UPLINK SECURE...`);    
+printLine(`> ROUTING: GDAŃSK -> NODE_539A... [WAIT]`);    
+    
+const fakeDelay = new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1500));    
+
+try {    
+    const [response] = await Promise.all([    
+        fetch(WORKER_URL, {    
+            method: "POST",    
+            headers: { "Content-Type": "application/json" },    
+            body: JSON.stringify({ message: question, patron: currentPatron })    
+        }),    
+        fakeDelay    
+    ]);    
+        
+    const data = await response.json();    
+    const reply = data.reply || "ОШИБКА ДАННЫХ // BŁĄD DANYCH";    
+        
+    printLine(`> CONNECTION... [OK]`);    
+        
+    appendText(`\n[ОТВЕТ АГЕНТА]:\n`, () => {    
+        printDroid(reply, currentPatron, true, true);    
+    });    
+
+} catch (error) {    
+    await fakeDelay;     
+    appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {    
+        printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);    
+    });    
+}
+
+}
+
+/* =========================================================
+BOOT PROCESS
+========================================================= */
 bootScreen.addEventListener("click", () => {
 initAudio();
-bgMusic.play().catch(e => console.log("Музыка заблокирована браузером:", e));
+playTrack('main'); // Врубаем звук серверов при старте
 bootScreen.style.opacity = "0";
 setTimeout(() => { bootScreen.style.display = "none"; }, 700);
 typeText(
@@ -937,11 +969,14 @@ promptLine.style.display = "flex"; inputField.focus();
 showHomeMenu(false);
 startJohnnyBug();
 setTimeout(() => { printDroid("Готов. // Gotowy.", "happy", true, false); }, 700);
-setInterval(triggerRandomDroid, 45000);
-}, 15);
+}, 25);
 });
 
+/* =========================================================
+MENU & COMMAND HANDLER
+========================================================= */
 function showHomeMenu(clearScreen = true) {
+playTrack('main'); // Возвращаем звук сервера в меню
 const menuText = `
 
 ГЛАВНОЕ МЕНЮ // MENU GŁÓWNE
@@ -1003,27 +1038,32 @@ function handleCommand(cmd, rawInput) {
 const parts = rawInput.trim().split(/\s+/); const action = parts[0].toLowerCase(); const arg = parts.slice(1).join(" ");
 switch(action) {
 case "home": showHomeMenu(true); break;
-case "story": playView(MAIN_STORY, () => { printDroid("История открыта. // Historia otwarta.", "curious", true, false); }); break;
+case "story": 
+    playTrack('story1'); // Включаем музыку для истории 1
+    playView(STORY_01, () => { printDroid("История открыта. // Historia otwarta.", "curious", true, false); }); 
+    break;
 case "story2":
-playView(STORY_2, () => {
-printDroid("Сильная история. Мороз по коже. // Mocna historia. Ciarki na plecach.", "curious", true, false);
-setTimeout(() => {
-const gazelleImg = appendImage("gazelle.jpg", "ФОТОФИКСАЦИЯ // FOTO-DOWÓD", "ТАЙГА // TAJGA", "УЛИКА // DOWÓD RZECZOWY");
-setTimeout(() => {
-if (gazelleImg) {
-gazelleImg.style.transition = "opacity 2s ease-in-out";
-gazelleImg.style.opacity = "0";
-setTimeout(() => { gazelleImg.remove(); }, 2000);
-}
-}, 60000);
-}, 1500);
-});
-break;
+    playTrack('story2'); // Включаем музыку для истории 2
+    playView(STORY_02, () => {
+    printDroid("Сильная история. Мороз по коже. // Mocna historia. Ciarki na plecach.", "curious", true, false);
+    setTimeout(() => {
+        const gazelleImg = appendImage("gazelle.jpg", "ФОТОФИКСАЦИЯ // FOTO-DOWÓD", "ТАЙГА // TAJGA", "УЛИКА // DOWÓD RZECZOWY");
+        setTimeout(() => {
+        if (gazelleImg) {
+            gazelleImg.style.transition = "opacity 2s ease-in-out";
+            gazelleImg.style.opacity = "0";
+            setTimeout(() => { gazelleImg.remove(); }, 2000);
+        }
+        }, 60000);
+    }, 1500);
+    });
+    break;
 case "story3":
-playView(STORY_3, () => {
-printDroid("Жесткий код. Я бы так не смог. // Twardy kod.", "scanning", true, false);
-});
-break;
+    playTrack('story3'); // Включаем музыку для истории 3
+    playView(STORY_3, () => {
+    printDroid("Жесткий код. Я бы так не смог. // Twardy kod.", "scanning", true, false);
+    });
+    break;
 case "notes": playView(IMMIGRANT_NOTES); break;
 case "projects": showProjects(); break;
 case "life": showLifeArchive(); break;
@@ -1075,6 +1115,9 @@ case "music":
 
 }
 
+/* =========================================================
+FUNCTIONALITIES (PROJECTS, LIFE, FILES, SEARCH, HACK)
+========================================================= */
 function showProjects() {
 output.innerHTML = "";
 appendText(`\n========================================\nАРХИВ ПРОЕКТОВ // ARCHIWUM PROJEKTÓW\n========================================\n`, () => {
