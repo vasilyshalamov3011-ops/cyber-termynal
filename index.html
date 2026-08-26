@@ -769,7 +769,7 @@ output.appendChild(span);
 scrollTerminal();
 }
 
-function typeText(text, callback, speed = 55) { 
+function typeText(text, callback, speed = 35) { 
     let i = 0;
     isTyping = true;
     
@@ -800,7 +800,7 @@ function typeText(text, callback, speed = 55) {
     run();
 }
 
-function appendText(text, callback = null, speed = 55) {
+function appendText(text, callback = null, speed = 35) {
     promptLine.style.display = "none";
     typeText(text, () => {
         promptLine.style.display = "flex";
@@ -809,7 +809,7 @@ function appendText(text, callback = null, speed = 55) {
     }, speed);
 }
 
-function playView(text, callback = null, speed = 55) {
+function playView(text, callback = null, speed = 35) {
 output.innerHTML = "";
 appendText(text, callback, speed);
 }
