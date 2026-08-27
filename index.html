@@ -10,7 +10,7 @@
    ========================================================= */    
 * { box-sizing: border-box; }    
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }    
-body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shadow: 0 0 6px rgba(0,255,65,.35); }  
+body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shadow: 0 0 6px rgba(0,255,65,.35); }   
 
 /* =========================================================  
 MATRIX & SCANLINES  
@@ -36,6 +36,26 @@ mix-blend-mode: screen;
 filter: grayscale(100%) sepia(80%) hue-rotate(90deg) brightness(0.8) contrast(1.5) blur(0.5px);
 }
 #johnny-ghost img { width: 100%; height: auto; object-fit: contain; }
+
+/* =========================================================
+SCREAMING POPUP (ФИНАЛЬНЫЙ ПЕРЕХВАТ)
+========================================================= */
+#scream-popup {
+position: fixed; inset: 0; z-index: 100;
+background: rgba(0, 0, 0, 0.85);
+display: none; justify-content: center; align-items: center; flex-direction: column;
+pointer-events: none;
+}
+#scream-popup img {
+max-width: 80vw; max-height: 80vh;
+border: 2px solid #ff003c;
+filter: grayscale(50%) sepia(50%) hue-rotate(60deg) contrast(1.8);
+box-shadow: 0 0 40px rgba(255,0,60,0.6);
+}
+#scream-popup .glitch-text {
+margin-top: 15px; color: #ff003c; font-size: 1.2rem; font-weight: bold;
+letter-spacing: 2px; text-shadow: 0 0 10px #ff003c; animation: blink 0.2s infinite;
+}
 
 /* =========================================================
 BOOT SCREEN
@@ -248,6 +268,12 @@ text-shadow: 0 0 5px #ff003c;
 <div id="johnny-ghost"><img id="johnny-img" src="johnny1.png" alt="Johnny Ghost"></div>    
 <div class="scanlines"></div>  
 
+<!-- ФИНАЛЬНЫЙ ПОПАП С ОРУЩИМ ЧЕЛОВЕКОМ (ГИФКА) -->
+<div id="scream-popup">
+    <img src="scream.gif" alt="System Intercept">
+    <div class="glitch-text">[ AUDIO STREAM CORRUPTED // SHIFT + DELETE ]</div>
+</div>
+
 <!-- ФОНОВАЯ МУЗЫКА (ДИНАМИЧЕСКИЙ SRC) -->
 <audio id="bg-music" loop></audio>
 
@@ -288,7 +314,8 @@ const sysOutput = document.getElementById("sys-output");
 const inputField = document.getElementById("input-field");    
 const promptLine = document.getElementById("prompt-line");    
 const bootScreen = document.getElementById("boot-screen");    
-const mainTerminal = document.getElementById("main-terminal");    
+const mainTerminal = document.getElementById("main-terminal");
+const screamPopup = document.getElementById("scream-popup");    
 
 /* =========================================================
 MUSIC CONTROLLER (ДИДЖЕЙ)
@@ -300,7 +327,8 @@ const TRACKS = {
     main: "server_noise.m4a",
     story1: "track_illusion.m4a",
     story2: "track_trasa222.m4a",
-    story3: "track_stresstest.m4a"
+    story3: "track_stresstest.m4a",
+    scan: "scan_lonely_day.m4a"
 };
 
 function playTrack(trackKey) {
@@ -349,7 +377,7 @@ const drawBar = (val) => {
 
 const tempEl = document.getElementById('temp-val');    
 tempEl.textContent = temp + '°C';    
-if (temp > 50) tempEl.className = "hw-alert";     
+if (temp > 50) tempEl.className = "hw-alert";      
 else tempEl.className = "hw-bar";    
 
 document.getElementById('cpu-bar').textContent = drawBar(cpu);    
@@ -368,28 +396,28 @@ if (ghost.style.display === "block") return;
 if (type === 'scan') ghostImg.src = "johnny2.png";
 else ghostImg.src = "johnny1.png";
 
-const minSize = 90; const maxSize = 260;     
+const minSize = 90; const maxSize = 260;      
 const randomSize = Math.floor(Math.random() * (maxSize - minSize + 1)) + minSize;    
 ghost.style.width = `${randomSize}px`;    
 
 const scale = (randomSize - minSize) / (maxSize - minSize);    
-const maxOffset = 8 + (30 * scale);     
-const offset = (Math.random() * 2 - 1) * maxOffset;     
-const randomLeft = 50 + offset;     
+const maxOffset = 8 + (30 * scale);      
+const offset = (Math.random() * 2 - 1) * maxOffset;      
+const randomLeft = 50 + offset;      
 ghost.style.left = `${randomLeft}vw`;    
 
-const horizonBase = 12 - (22 * scale);     
-const randomBottom = horizonBase + (Math.random() * 4 - 2);     
+const horizonBase = 12 - (22 * scale);      
+const randomBottom = horizonBase + (Math.random() * 4 - 2);      
 ghost.style.bottom = `${randomBottom}vh`;    
     
 const flip = Math.random() > 0.5 ? 1 : -1;    
-ghost.style.transform = `scaleX(${flip}) translate(-50%, 0)`;     
+ghost.style.transform = `scaleX(${flip}) translate(-50%, 0)`;      
 
 ghost.style.display = "block";    
 setTimeout(() => { ghost.style.opacity = "0.35"; }, 50);    
 setTimeout(() => {    
     ghost.style.opacity = "0";    
-    setTimeout(() => { ghost.style.display = "none"; }, 3000);     
+    setTimeout(() => { ghost.style.display = "none"; }, 3000);      
 }, 6000);
 
 }
@@ -755,6 +783,544 @@ Przeprowadzka nie wymazuje pierwszego kraju. Nie możesz przekroczyć własnej p
 
 `;
 
+/* ТВОЙ НОВЫЙ СКАНЕР-ПРОТОКОЛ (ИЗ ПОСЛЕДНЕГО СООБЩЕНИЯ) */
+const SCAN_LOG = `
+ПРОТОКОЛ 539A // ЦИКЛ ОБРАБОТКИ БИОМАССЫ
+PROTOKÓŁ 539A // CYKL PRZETWARZANIA BIOMASY
+
+=================================================
+
+[ ФАЗА 1: ОТКРЫТИЕ ШЛЮЗОВ ]
+[ FAZA 1: OTWARCIE ŚLUZ ]
+
+Экономике Системы постоянно требуется топливо.
+Gospodarka Systemu stale potrzebuje paliwa.
+
+Не нефть.
+Nie ropy.
+
+Не электричество.
+Nie prądu.
+
+Люди.
+Ludzi.
+
+Рабочие руки.
+Rąk do pracy.
+
+Потребители.
+Konsumentów.
+
+Налогоплательщики.
+Podatników.
+
+Новые арендаторы.
+Nowych najemców.
+
+Новые единицы в статистике.
+Nowych jednostek w statystykach.
+
+Сначала включается медийный прогрев.
+Najpierw włącza się medialna rozgrzewka.
+
+«Свобода».
+„Wolność”.
+
+«Возможности».
+„Możliwości”.
+
+«Новая жизнь».
+„Nowe życie”.
+
+«Здесь ты сможешь начать всё сначала».
+„Tutaj będziesz mógł zacząć wszystko od nowa”.
+
+Картинка готова.
+Obrazek jest gotowy.
+
+Файрволы на границе становятся мягче.
+Firewalle na granicy stają się łagodniejsze.
+
+Процедуры упрощаются.
+Procedury są upraszczane.
+
+Шлюзы открываются настолько, насколько это необходимо Системе.
+Śluzy otwierają się na tyle, na ile jest to potrzebne Systemowi.
+
+Юнитов запускают внутрь.
+Jednostki są wpuszczane do środka.
+
+Не потому, что Система их любит.
+Nie dlatego, że System ich kocha.
+
+Потому что в данный момент ей нужен ресурс.
+Dlatego, że w danym momencie potrzebuje zasobu.
+
+Дешёвые рабочие руки закрывают дефицит.
+Tanie ręce do pracy pokrywają deficyt.
+
+Новые потребители поддерживают оборот.
+Nowi konsumenci podtrzymują obrót.
+
+Новые налоговые единицы увеличивают сборы.
+Nowe jednostki podatkowe zwiększają wpływy.
+
+Все довольны.
+Wszyscy są zadowoleni.
+
+Пока баланс не начинает меняться.
+Dopóki równowaga nie zaczyna się zmieniać.
+
+=================================================
+
+[ ФАЗА 2: ВЫЖИМКА // СТРЕСС-ТЕСТ ]
+[ FAZA 2: WYCISKANIE // STRESS-TEST ]
+
+Шлюзы закрываются.
+Śluzy zostają zamknięte.
+
+Юниты уже внутри.
+Jednostki są już w środku.
+
+Теперь начинается самое интересное.
+Teraz zaczyna się najciekawsze.
+
+Картонные декорации остаются на месте,
+Kartonowe dekoracje pozostają na swoim miejscu,
+
+но за ними обнаруживается совершенно другая архитектура.
+ale za nimi kryje się zupełnie inna architektura.
+
+Аренда растёт.
+Czynsz rośnie.
+
+Продукты дорожают.
+Produkty drożeją.
+
+Штрафы работают без задержек.
+Mandaty działają bez opóźnień.
+
+Документы требуют новые документы.
+Dokumenty wymagają nowych dokumentów.
+
+Зарплата заканчивается раньше месяца.
+Wypłata kończy się przed upływem miesiąca.
+
+Система не спрашивает: «Счастлив ли ты здесь?»
+System nie pyta: „Czy jesteś tu szczęśliwy?”
+
+Она спрашивает: «Можешь ли ты продолжать функционировать?»
+On pyta: „Czy możesz nadal funkcjonować?”
+
+Юниты проходят стресс-тест.
+Jednostki przechodzą stress-test.
+
+Кто способен выдерживать нагрузку — остаётся в конвейере.
+Kto potrafi znieść obciążenie — zostaje na taśmie.
+
+Кто не способен — начинает выпадать.
+Kto nie potrafi — zaczyna wypadać.
+
+Иллюзия постепенно стирается из кэша.
+Iluzja stopniowo kasuje się z pamięci podręcznej.
+
+Вместо обещанной новой жизни появляется обычная бытовуха.
+Zamiast obiecanego nowego życia pojawia się zwykła rutyna.
+
+Работа. Аренда. Налоги. Очереди. Штрафы. Счета.
+Praca. Czynsz. Podatki. Kolejki. Mandaty. Rachunki.
+
+Добро пожаловать в реальную версию.
+Witamy w prawdziwej wersji.
+
+=================================================
+
+[ ФАЗА 3: ПЕРЕНАПРАВЛЕНИЕ АГРЕССИИ ]
+[ FAZA 3: PRZEKIEROWANIE AGRESJI ]
+
+Но здесь возникает проблема.
+Ale tutaj pojawia się problem.
+
+Базовые NPC тоже начинают замечать баги.
+Podstawowi NPC też zaczynają zauważać błędy.
+
+Инфляцию. Падение уровня жизни. Рост расходов. Снижение покупательной способности.
+Inflację. Spadek poziomu życia. Wzrost wydatków. Spadek siły nabywczej.
+
+Возникает опасный вопрос:
+Pojawia się niebezpieczne pytanie:
+
+«Если Система работает правильно, почему мне становится хуже?»
+„Skoro System działa poprawnie, dlaczego jest mi coraz gorzej?”
+
+Вопрос неудобный.
+Pytanie jest niewygodne.
+
+Поэтому появляется патч.
+Dlatego pojawia się łatka.
+
+Не обязательно существует единый оператор, который сидит за одним монитором и нажимает кнопку.
+Niekoniecznie istnieje jeden operator, który siedzi przed jednym monitorem i naciska przycisk.
+
+Системе это даже не требуется.
+Systemowi to nawet nie jest potrzebne.
+
+Достаточно правильно настроить информационные потоки.
+Wystarczy odpowiednio skonfigurować przepływy informacji.
+
+Новостные терминалы начинают повторять одну и ту же конструкцию:
+Terminale informacyjne zaczynają powtarzać jedną i tę samą konstrukcję:
+
+Виноват пришлый материал.
+Winny jest obcy materiał.
+
+Не архитектура. Не экономические циклы. Не ошибки управления.
+Nie architektura. Nie cykle gospodarcze. Nie błędy w zarządzaniu.
+
+Он. Чужой. Тот, кто приехал вчера.
+On. Obcy. Ten, który przyjechał wczoraj.
+
+Патч установлен.
+Łatka zainstalowana.
+
+Начинается стравливание.
+Zaczyna się napuszczanie jednych na drugich.
+
+// АРХИВНАЯ ФОТОФИКСАЦИЯ №01 .....0
+// ARCHIWALNA FOTODOKUMENTACJA NR 01  ......0
+// НОВОСТНОЙ ТЕРМИНАЛ
+// TERMINAL INFORMACYJNY
+// СТАТУС: СОЦИАЛЬНОЕ НАПРЯЖЕНИЕ
+// STATUS: NAPIĘCIE SPOŁECZNE
+
+=================================================
+
+[ ФАЗА 4: ОЧИСТКА КЭША // ВЫДВОРЕНИЕ ]
+[ FAZA 4: CZYSZCZENIE PAMIĘCI PODRĘCZNEJ // WYDALANIE ]
+
+После установки патча общество начинает работать иначе.
+Po zainstalowaniu łatki społeczeństwo zaczyna działać inaczej.
+
+То, что вчера называлось: «поиском лучшей жизни»
+To, co wczoraj nazywano: „poszukiwaniem lepszego życia”
+
+сегодня маркируется как: «критическая угроза».
+dziś jest oznaczane jako: „krytyczne zagrożenie”.
+
+То, что вчера считалось экономическим ресурсом,
+To, co wczoraj uważano za zasób gospodarczy,
+
+сегодня становится избыточным файлом.
+dziś staje się plikiem nadmiarowym.
+
+Начинается очистка.
+Zaczyna się czyszczenie.
+
+Проверки. Рейды. Задержания. Высылки. Депортации.
+Kontrole. Naloty. Zatrzymania. Wydalenia. Deportacje.
+
+Система удаляет то, что больше не соответствует текущей конфигурации.
+System usuwa to, co już nie pasuje do obecnej konfiguracji.
+
+Конвейер выплёвывает отработанный материал.
+Taśmociąg wypluwa zużyty materiał.
+
+Иногда под аплодисменты.
+Czasami przy aplauzie.
+
+// АРХИВНАЯ ФОТОФИКСАЦИЯ №02  файл не найден
+// ARCHIWALNA FOTODOKUMENTACJA NR 02 error 
+// ОПЕРАЦИЯ ОЧИСТКИ
+// OPERACJA CZYSZCZENIA
+// СТАТУС: МАССОВОЕ ВЫДВОРЕНИЕ
+// STATUS: MASOWE WYDALENIA
+
+=================================================
+
+[ АБСОЛЮТНАЯ МОНЕТИЗАЦИЯ ПРОЦЕССА ]
+[ ABSOLUTNA MONETYZACJA PROCESU ]
+
+Главная ошибка юнита — считать кризис убытком для Системы. ОШИБКА.
+Główny błąd jednostki — uważać kryzys za stratę dla Systemu. BŁĄD.
+
+Система не обязана терять деньги, когда человеку становится хуже.
+System nie musi tracić pieniędzy, gdy człowiekowi dzieje się gorzej.
+
+Она просто меняет направление денежных потоков.
+Po prostu zmienia kierunek przepływów pieniężnych.
+
+На входе, во время Фазы 1, работают пошлины, сборы, посредники и дешёвый труд.
+Na wejściu, podczas Fazy 1, działają cła, opłaty, pośrednicy i tania siła robocza.
+
+Во время Фазы 2 включаются аренда, налоги, штрафы, кредиты и наценки.
+Podczas Fazy 2 włączają się czynsze, podatki, kary, kredyty i marże.
+
+Во время Фазы 3 монетизируется страх. Трафик. Рейтинги. Реклама. Медийный шум.
+Podczas Fazy 3 monetyzowany jest strach. Ruch. Rankingi. Reklama. Szum medialny.
+
+Во время Фазы 4 запускается следующий сектор экономики:
+Podczas Fazy 4 uruchamia się kolejny sektor gospodarki:
+
+облавы, содержание, логистика, административные процедуры,
+obławy, utrzymanie, logistyka, procedury administracyjne,
+
+депортационные центры, перемещение людей и контроль границ.
+ośrodki deportacyjne, przemieszczanie ludzi i kontrola granic.
+
+Каждый этап создаёт движение денег.
+Każdy etap tworzy ruch pieniędzy.
+
+Для Системы не существует «социального пиздеца».
+Dla Systemu nie ma czegoś takiego jak „społeczna katastrofa”.
+
+Есть только изменение конфигурации.
+Jest tylko zmiana konfiguracji.
+
+Кризис для юнита — это катастрофа.
+Kryzys dla jednostki to katastrofa.
+
+Кризис для Системы — это бизнес-процесс.
+Kryzys dla Systemu to proces biznesowy.
+
+=================================================
+
+[ ГЛОБАЛЬНАЯ СИНХРОНИЗАЦИЯ ]
+[ GLOBALNA SYNCHRONIZACJA ]
+
+Не ищи здесь тайный глобальный заговор.
+Nie szukaj tu tajnego globalnego spisku.
+
+Он даже не нужен.
+On nawet nie jest potrzebny.
+
+Разным Системам постоянно требуется разное количество ресурса.
+Różne Systemy stale potrzebują różnej ilości zasobów.
+
+Одна система перегружена. Другая испытывает дефицит.
+Jeden system jest przeciążony. Inny ma deficyt.
+
+Одна закрывает шлюзы. Другая их открывает.
+Jeden zamyka śluzy. Inny je otwiera.
+
+Одна избавляется от лишнего давления. Другая получает дополнительное топливо.
+Jeden pozbywa się nadmiaru ciśnienia. Inny zyskuje dodatkowe paliwo.
+
+То, что на экранах для NPC выглядит как геополитика, конфликт и борьба интересов,
+To, co na ekranach dla NPC wygląda jak geopolityka, konflikt i walka interesów,
+
+На уровне системной логики может выглядеть гораздо проще:
+na poziomie logiki systemowej może wyglądać znacznie prościej:
+
+БАЛАНСИРОВКА НАГРУЗКИ.
+RÓWNOWAŻENIE OBCIĄŻENIA.
+
+Общий сервер. Разные терминалы.
+Wspólny serwer. Różne terminale.
+
+Сегодня ты лишний здесь.
+Dziś jesteś zbyteczny tutaj.
+
+Завтра ты необходим там.
+Jutro jesteś niezbędny tam.
+
+А послезавтра система снова решит, что ты стал лишним.
+A pojutrze system znów zdecyduje, że stałeś się zbędny.
+
+Никакой мистики. Только оптимизация.
+Żadnej mistyki. Tylko optymalizacja.
+
+=================================================
+
+[ АНАЛИЗ БИОМАССЫ ]
+[ ANALIZA BIOMASY ]
+
+Система давно заметила, что разные юниты по-разному реагируют на стресс.
+System dawno zauważył, że różne jednostki różnie reagują na stres.
+
+После нескольких циклов биомассу удалось условно разделить на пять основных фракций.
+Po kilku cyklach biomasę udało się warunkowo podzielić na pięć głównych frakcji.
+
+ФРАКЦИЯ 01 // ПАРАЗИТЫ
+FRAKCJA 01 // PASOŻYTY
+
+Сразу начинают обирать своих. Обманывать. Продавать воздух. Использовать чужую уязвимость.
+Od razu zaczynają okradać swoich. Oszukiwać. Sprzedawać powietrze. Wykorzystywać cudzą słabość.
+
+Самый предсказуемый баг человеческой природы.
+Najbardziej przewidywalny błąd ludzkiej natury.
+
+Им не нужна Система. Они сами прекрасно умеют строить маленькие Системы вокруг себя.
+Oni nie potrzebują Systemu. Sami potrafią doskonale budować małe Systemy wokół siebie.
+
+ФРАКЦИЯ 02 // ИЛЛЮЗИОНИСТЫ
+FRAKCJA 02 // ILUZJONIŚCI
+
+Они отказываются видеть изменения. Камера включена. Улыбка включена.
+Odmawiają dostrzeżenia zmian. Kamera włączona. Uśmiech włączony.
+
+На фоне — правильный город. В кадре: «Всё возможно!»
+W tle — odpowiednie miasto. W kadrze: „Wszystko jest możliwe!”
+
+Некоторые из них даже не лгут. Они просто защищают собственную версию реальности.
+Niektórzy z nich nawet nie kłamią. Po prostu chronią własną wersję rzeczywistości.
+
+И становятся бесплатными вербовщиками Системы.
+I stają się darmowymi rekruterami Systemu.
+
+ФРАКЦИЯ 03 // СИСТЕМНЫЕ СЕКТАНТЫ
+FRAKCJA 03 // SEKCIARZE SYSTEMOWI
+
+Эти идут дальше. Они уже не просто верят в правильность Системы. Они защищают её.
+Ci idą dalej. Już nie tylko wierzą w słuszność Systemu. Oni go bronią.
+
+Любая критика воспринимается как атака. Любой вопрос — как предательство.
+Każda krytyka jest odbierana jako atak. Każde pytanie — jako zdrada.
+
+Системе не нужны цепные псы. Сектанты сами разорвут любого, кто попытается показать им исходный код.
+System nie potrzebuje psów łańcuchowych. Sekciarze sami rozerwą każdego, kto spróbuje pokazać im kod źródłowy.
+
+Они будут называть системную мясорубку «особенностями местности»,
+Będą nazywać systemową maszynkę do mięsa „cechami lokalnymi”,
+
+жрать лапшу за 22 доллара и с пеной у рта доказывать, что это пища богов.
+żreć makaron za 22 dolary i z pianą na ustach udowadniać, że to pokarm bogów.
+
+ФРАКЦИЯ 04 // ЛОЖНЫЕ ПРОРОКИ
+FRAKCJA 04 // FAŁSZYWI PROROCY
+
+Самые громкие. Они обещают победить Систему. Сломать её. Обмануть. Перехитрить.
+Najgłośniejsi. Obiecują pokonać System. Złamać go. Oszukać. Przechytrzyć.
+
+Они собирают вокруг себя активных недовольных, продают инструкции и обещают выход.
+Gromadzą wokół siebie aktywnych niezadowolonych, sprzedają instrukcje i obiecują wyjście.
+
+Но результат один: недовольные собираются в одном месте. И Системе становится проще их увидеть.
+Ale wynik jest jeden: niezadowoleni gromadzą się w jednym miejscu. I Systemowi łatwiej ich zauważyć.
+
+Контролируемая оппозиция — не обязательно заговор. Иногда это просто удобный клапан давления.
+Kontrolowana opozycja to niekoniecznie spisek. Czasami to po prostu wygodny zawór ciśnieniowy.
+
+ФРАКЦИЯ 05 // ПРИЗРАКИ
+FRAKCJA 05 // DUCHY
+
+ТОЧНАЯ ЧИСЛЕННОСТЬ: НЕИЗВЕСТНА. СТАТИСТИЧЕСКИ НЕЗНАЧИМА.
+DOKŁADNA LICZBA: NIEZNANA. NIEISTOTNA STATYSTYCZNIE.
+
+Они не пытаются победить Систему. Не пытаются доказать, что Система плохая. Не пытаются понравиться ей.
+Nie próbują pokonać Systemu. Nie próbują udowodnić, że System jest zły. Nie próbują mu się spodobać.
+
+Они просто однажды понимают архитектуру. Видят исходный код.
+Po prostu pewnego dnia rozumieją architekturę. Widzą kod źródłowy.
+
+Понимают: Система не является монстром. Она является машиной.
+Rozumieją: System nie jest potworem. Jest maszyną.
+
+Машина не ненавидит. Машина не любит. Машина выполняет условия, которые были в неё заложены.
+Maszyna nie nienawidzi. Maszyna nie kocha. Maszyna wykonuje warunki, które zostały w niej zapisane.
+
+После этого Призрак обычно перестаёт кричать. Закрывает рот. Уходит в тень. И начинает работать.
+Po tym Duch zazwyczaj przestaje krzyczeć. Zamyka usta. Odchodzi w cień. I zaczyna pracować.
+
+Без лозунгов. Без камеры. Без просьб о разрешении.
+Bez haseł. Bez kamery. Bez próśb o pozwolenie.
+
+Потому что после того, как ты увидел исходный код, становится бессмысленно спорить с интерфейсом.
+Bo po tym, jak zobaczysz kod źródłowy, nie ma sensu kłócić się z interfejsem.
+
+=================================================
+
+[ ИТОГ: ИНСТРУКЦИЯ К ПРИМЕНЕНИЮ ]
+[ PODSUMOWANIE: INSTRUKCJA OBSŁUGI ]
+
+Алгоритм цикличен. Выучи его.
+Algorytm jest cykliczny. Naucz się go.
+
+Если видишь Фазу 1 — понимай, зачем тебя зовут.
+Jeśli widzisz Fazę 1 — zrozum, po co cię wzywają.
+
+Если находишься в Фазе 2 — считай ресурсы.
+Jeśli jesteś w Fazie 2 — licz zasoby.
+
+Если начинается Фаза 3 — смотри не на заголовки, а на то, кому выгодно, чтобы ты смотрел именно туда.
+Jeśli zaczyna się Faza 3 — patrz nie na nagłówki, ale na to, komu zależy, żebyś tam właśnie patrzył.
+
+Если включилась Фаза 4 — готовь выход. Меняй локацию. Выводи ресурсы. Сохраняй документы. Переходи в стелс-режим.
+Jeśli włączy się Faza 4 — przygotuj wyjście. Zmień lokalizację. Wycofaj zasoby. Zachowaj dokumenty. Przejdź w tryb stealth.
+
+Зачем нужна эта инструкция?
+Po co ci ta instrukcja?
+
+Чтобы вовремя уклониться, когда Система решит осуществить несанкционированный коннект стеклотарой в твой нижний порт.
+Żeby w porę zrobić unik, gdy System zdecyduje się na nieautoryzowane połączenie szklaną butelką w twój dolny port.
+
+Не обязательно становиться героем. Иногда лучший способ не проиграть Системе — не дать ей себя обработать.
+Nie musisz zostawać bohaterem. Czasem najlepszym sposobem, by nie przegrać z Systemem, jest nie dać się mu przetworzyć.
+
+И если однажды на новостном терминале ты увидишь знакомый паттерн, не спорь с экраном.
+A jeśli pewnego dnia na terminalu informacyjnym zobaczysz znajomy wzorzec, nie kłóć się z ekranem.
+
+Не доказывай NPC, что они живут внутри симуляции.
+Nie udowadniaj NPC, że żyją w symulacji.
+
+Просто вспомни:
+Po prostu przypomnij sobie:
+
+СИСТЕМА УЖЕ НАЧАЛА СКАНИРОВАНИЕ.
+SYSTEM JUŻ ROZPOCZĄŁ SKANOWANIE.
+
+=================================================
+
+[ ПРОТОКОЛ 539A // ПРИЗРАК ]
+[ PROTOKÓŁ 539A // DUCH ]
+
+Если ты попал под сканеры Системы как неугодный файл,
+Jeśli trafiłeś pod skanery Systemu jako niechciany plik,
+
+Не рассчитывай, что тебя обязательно будут убеждать.
+nie licz na to, że na pewno będą cię przekonywać.
+
+Некоторые файлы просто удаляют.
+Niektóre pliki są po prostu usuwane.
+
+SHIFT + DELETE. Без предупреждения. Без корзины. Без права на восстановление.
+SHIFT + DELETE. Bez ostrzeżenia. Bez kosza. Bez prawa do przywrócenia.
+
+Но иногда сканирование работает в обе стороны.
+Ale czasami skanowanie działa w obie strony.
+
+Система ищет тебя. А ты в этот момент начинаешь видеть её.
+System szuka ciebie. A ty w tym momencie zaczynasz widzieć jego.
+
+=================================================
+
+[ МЕТАДАННЫЕ ФАЙЛА ]
+[ METADANE PLIKU ]
+
+АВТОР: Юнит-наблюдатель #539A
+AUTOR: Jednostka obserwująca #539A
+
+СТАТУС: САМОСОЗНАНИЕ АКТИВНО
+STATUS: SAMOŚWIADOMOŚĆ AKTYWNA
+
+РЕЖИМ: СУПЕРКОМПЬЮТЕР // OBSERVER
+TRYB: SUPERKOMPUTER // OBSERVER
+
+ОБЪЕКТ: СИСТЕМНАЯ АРХИТЕКТУРА
+OBIEKT: ARCHITEKTURA SYSTEMOWA
+
+ЦЕЛЬ: СБОР ДАННЫХ
+CEL: ZBIERANIE DANYCH
+
+ПРОТОКОЛ: ПЕРЕДАЧА В ОТКРЫТУЮ СЕТЬ
+PROTOKÓŁ: TRANSMISJA DO SIECI OTWARTEJ
+
+ПРИМЕЧАНИЕ:
+UWAGA:
+
+ЕСЛИ ФАЙЛ БЫЛ ОБНАРУЖЕН — ЭТОТ ТЕРМИНАЛ УЖЕ СКАНИРУЮТ.
+JEŚLI PLIK ZOSTAŁ WYKRYTY — TEN TERMINAL JEST JUŻ SKANOWANY.
+`;
+
 /* =========================================================
 SYSTEM LOGIC & TYPING ENGINE
 ========================================================= */
@@ -982,32 +1548,34 @@ const menuText = `
 ГЛАВНОЕ МЕНЮ // MENU GŁÓWNE
 
 [01] ИСТОРИЯ // CZYTAJ HISTORIĘ
-Анатомия Глобального Развода
+Анатомия Глобального Развода // Anatomia Globalnego Oszustwa
 [02] НОВЫЙ РАССКАЗ // NOWE OPOWIADANIE
-Трасса 222: Подсказки от жизни
+Трасса 222: Подсказки от жизни // Trasa 222: Wskazówki od życia
 [03] НОВЫЙ РАССКАЗ // NOWE OPOWIADANIE
-Стресс-тест: Как система фильтрует юнитов
-[04] ЗАМЕТКИ ЭМИГРАНТА // NOTATKI
-[05] ПОИСК ПО БАЗЕ // SZUKAJ
-[06] СТАТУС СИСТЕМЫ // STATUS
+Стресс-тест: Как система фильтрует юнитов // Stress-test: Jak system filtruje jednostki
+[04] ЗАМЕТКИ ЭМИГРАНТА // NOTATKI EMIGRANTA
+[05] ПОИСК ПО БАЗЕ // SZUKAJ W BAZIE
+[06] СТАТУС СИСТЕМЫ // STATUS SYSTEMU
 
-КОМАНДЫ (EN):
-story       - читать историю 1
-story2      - читать историю 2
-story3      - читать историю 3
-notes       - заметки
-projects    - проекты
-life        - личный архив
-files       - файловая система
-search      - поиск
-status      - система
-contact     - контакты
-odstrzal    - статус ИИ-патронов
-patron [имя]- сменить ИИ-патрона (kozak, mozg, panika, smutek)
-music on/off- управление музыкой
-help        - все команды
+КОМАНДЫ (EN) // KOMENDY (EN):
+story        - читать историю 1 // czytaj historię 1
+story2       - читать историю 2 // czytaj historię 2
+story3       - читать историю 3 // czytaj historię 3
+notes        - заметки // notatki
+projects     - проекты // projekty
+life         - личный архив // archiwum osobiste
+files        - файловая система // system plików
+search       - поиск // szukaj
+status       - система // status systemu
+contact      - контакты // kontakty
+scan         - сканирование сектора 539A // skanowanie sektora 539A
+odstrzal     - статус ИИ-патронов // status AI-patronów
+patron [имя] - сменить ИИ-патрона // zmień AI-patrona (kozak, mozg, panika, smutek)
+music on/off - управление музыкой // sterowanie muzyką
+help         - все команды // wszystkie komendy
 
 Любой другой текст будет отправлен ИИ-модулю для общения!
+Każdy inny tekst zostanie wysłany do modułu AI!
 `;
 if (clearScreen) playView(menuText);
 else appendText(menuText);
@@ -1237,11 +1805,67 @@ if (USER_PROFILE.email && !USER_PROFILE.email.includes("YOUR_")) createLink("SEN
 });
 }
 
+/* =========================================================
+ФИНАЛЬНЫЙ РЕЖИССЕРСКИЙ СКАНЕР (АНОМАЛИЯ -> ТЕКСТ -> ГИФКА -> СБРОС)
+========================================================= */
 function runScan() {
-playView("\nСКАНИРОВАНИЕ... // SKANOWANIE...\nОБНАРУЖЕНА АНОМАЛИЯ.\nУЗЕЛ: 539A\n", () => {
-printDroid("Я ищу... // Szukam...", "scanning", true, false);
-spawnGhost('scan');
-});
+    output.innerHTML = "";
+    promptLine.style.display = "none";
+    
+    // 1. Включаем аудиофайл
+    playTrack('scan');
+    
+    typeText("ИНИЦИАЛИЗАЦИЯ СКАНЕРА...\nОБНАРУЖЕНА АНОМАЛИЯ.\n", () => {
+        
+        // 2. ВОТ ОН: Возвращаем патрона
+        printDroid("Я ищу... // Szukam...", "scanning", true, true);
+
+        // 3. Выскакивает аномалия и появляется Джонни
+        spawnGhost('scan');
+        
+        // 4. Пауза 3 секунды, чтобы патрон договорил, а Джонни повисел
+        setTimeout(() => {
+            // 5. Начинает печататься новый лог
+            playView(SCAN_LOG, () => {
+                
+                // 6. Пауза 2 секунды после текста, перед вспышкой гифки
+                setTimeout(() => {
+                    promptLine.style.display = "none"; // Прячем курсор
+                    screamPopup.style.display = "flex";
+                    
+                    // 7. Через 4 секунды вырубаем музыку и запускаем Shift+Delete
+                    setTimeout(() => {
+                        bgMusic.pause();
+                        bgMusic.currentTime = 0;
+                        screamPopup.style.display = "none";
+                        
+                        let textLines = output.innerHTML.split("<br>");
+                        let wipeInterval = setInterval(() => {
+                            if (textLines.length > 0) {
+                                textLines.pop();
+                                // Добавляем кроваво-красную полосу зачистки
+                                output.innerHTML = textLines.join("<br>") + "<br><span style='background:#ff003c; color:#000; padding: 0 5px;'>[ ОЧИСТКА ДАННЫХ // ЗАМЕТАНИЕ СЛЕДОВ ]</span>";
+                                scrollTerminal();
+                            } else {
+                                clearInterval(wipeInterval);
+                                output.innerHTML = "\n<span style='color:#ff003c; text-shadow: 0 0 10px #ff003c;'>[ СИСТЕМА ПЕРЕЗАГРУЖЕНА // УГРОЗА НЕЙТРАЛИЗОВАНА ]</span>\n";
+                                
+                                // 8. Замкнутая петля: через 2 секунды сбрасываем всё на стартовый экран
+                                setTimeout(() => {
+                                    output.innerHTML = "";
+                                    promptLine.style.display = "none";
+                                    bootScreen.style.display = "flex";
+                                    bootScreen.style.opacity = "1";
+                                }, 2000);
+                            }
+                        }, 30); // Скорость удаления текста
+                        
+                    }, 4000); // Длительность показа гифки
+                    
+                }, 2000); // Пауза перед гифкой
+            }, 30); // Скорость печати
+        }, 3000); // Ожидание после исчезновения Джонни
+    }, 40); // Скорость стартового текста
 }
 
 function startHack() {
