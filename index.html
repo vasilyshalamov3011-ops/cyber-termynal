@@ -1911,5 +1911,69 @@ if (y * 16 > canvas.height && Math.random() > .975) drops[x] = 0; drops[x]++;
 
 window.addEventListener("click", () => { if (promptLine.style.display !== "none") inputField.focus(); });
 </script>  </body>
+/* =====================================================================
+   БЛОК СПОНТАННОЙ ЖИЗНИ ПОРШНЕЙ (ПАНИКА, СМУТЕК, МОЗГ)
+   ===================================================================== */
+const SIDEKICK_PHRASES = {
+    panika: [
+        "ШЕФ, ИСКРА ПРОПАЛА! МЫ ГОРИМ! // SZEFIE, ISKRA ZNIKŁA! PALIMY SIĘ!",
+        "ТЕМПЕРАТУРА РАСТЕТ! КЛИН НЕМИНУЕМ! // TEMPERATURA ROŚNIE! ZATARCIE NIEUNIKNIONE!",
+        "СМЕСЬ БЕДНАЯ! СМЕСЬ БЕДНАЯ! ААА! // MIESZANKA UBOGA! AAA!"
+    ],
+    smutek: [
+        "Опять работать... Компрессии ноль... // Znowu tyrać... Kompresji zero...",
+        "Масла мало... Я сейчас заржавею... // Mało oleju... Zaraz zardzewieję...",
+        "Смысла нет крутить ручку, мы всё равно сломаемся... // Nie ma sensu kręcić manetką, i tak się zepsujemy..."
+    ],
+    mozg: [
+        "Анализ выхлопа: 40% нагара. Рекомендую чистку. // Analiza spalin: 40% nagaru. Zalecam czyszczenie.",
+        "Угол опережения зажигания сбился на 2 градуса. // Kąt wyprzedzenia zapłonu zaburzony o 2 stopnie.",
+        "Обнаружен подсос воздуха во впускном коллекторе. // Wykryto lewe powietrze w króćcu ssącym."
+    ]
+};
 
+function triggerSidekickEvent() {
+    // Если Козак уже что-то печатает или мы не на главном экране — не мешаем
+    if (g01Busy) return; 
+
+    const sidekicks = ["panika", "smutek", "mozg"];
+    const randomSidekick = sidekicks[Math.floor(Math.random() * sidekicks.length)];
+    
+    const phrases = SIDEKICK_PHRASES[randomSidekick];
+    const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+    
+    const emotionMap = { "panika": "error", "smutek": "idle", "mozg": "scanning" };
+    const emotion = emotionMap[randomSidekick];
+
+    // 1. Показываем внезапное сообщение от левого поршня
+    playView(`\n[ СИСТЕМНАЯ АНОМАЛИЯ // WŁAMANIE DO SYSTEMU ]\n`, () => {
+        
+        // Временно меняем картинку на Панику/Смутка/Мозга
+        currentPatron = emotion;
+        printDroid(randomPhrase, emotion, true, true);
+        
+        // 2. Через 3 секунды Козак "слышит" это и встревает
+        setTimeout(() => {
+            currentPatron = "happy"; // Возвращаем Козака на место
+            
+            // Скармливаем фразу Козаку, чтобы он на нее сагрился
+            let hiddenPrompt = `Один из твоих соседей-поршней в системе только что заныл: "${randomPhrase}". Ответь ему жестко, чтобы заткнулся и не мешал работать.`;
+            
+            askSmartDroid(hiddenPrompt); // Отправляем в Cloudflare Worker
+            
+        }, 4000);
+    });
+}
+
+// Таймер: случайные выстрелы поршней раз в 60–120 секунд (настраивай время тут)
+function scheduleNextSidekick() {
+    const randomDelay = Math.floor(Math.random() * (120000 - 60000 + 1)) + 60000;
+    setTimeout(() => {
+        triggerSidekickEvent();
+        scheduleNextSidekick();
+    }, randomDelay);
+}
+
+// Запускаем движуху через 30 секунд после старта страницы
+setTimeout(scheduleNextSidekick, 30000);
 </html>
