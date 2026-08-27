@@ -1910,7 +1910,8 @@ if (y * 16 > canvas.height && Math.random() > .975) drops[x] = 0; drops[x]++;
 }, 50);
 
 window.addEventListener("click", () => { if (promptLine.style.display !== "none") inputField.focus(); });
-
+</script>  </body>
+</html>
 /* =====================================================================
    БЛОК СПОНТАННОЙ ЖИЗНИ ПОРШНЕЙ (ПАНИКА, СМУТЕК, МОЗГ)
    ===================================================================== */
@@ -1974,7 +1975,7 @@ function scheduleNextSidekick() {
     }, randomDelay);
 }
 
-// Запускаем движуху через 30 секунд после старта страницы
+// Запускаем движуху через 50 секунд после старта страницы
 setTimeout(scheduleNextSidekick, 180000);
 </script>  </body>
 </html>
