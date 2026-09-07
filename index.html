@@ -1408,7 +1408,7 @@ let freq = 620;
 switch(type) { case "bip": freq=760; break; case "boop": freq=420; break; case "biiip": freq=900; break; case "tik": freq=1000; break; }
 osc.type = "square"; osc.frequency.value = freq;
 gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-gain.gain.exponentialRampToValueAtTime(0.0004, audioContext.currentTime + 0.015);
+gain.gain.exponentialRampToValueAtTime(0.0005, audioContext.currentTime + 0.015);
 gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.11);
 osc.connect(gain); gain.connect(audioContext.destination);
 osc.start(); osc.stop(audioContext.currentTime + 0.12);
