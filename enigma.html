@@ -3,35 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENIGMA - KANAŁ / КАНАЛ</title>
+    <title>SECURE UPLINK // ENIGMA-M</title>
     <style>
         body {
-            background-color: #dcd1b3; 
-            color: #1a1a1a;
+            background-color: #050505; 
+            color: #00ff41; 
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 0;
             font-size: 18px;
             font-weight: bold;
             overflow-x: hidden;
-            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.2);
+            text-shadow: 0 0 4px rgba(0, 255, 65, 0.8); 
         }
 
-        .vignette {
+        /* Эффект ЭЛТ-монитора */
+        .crt-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            box-shadow: inset 0 0 150px rgba(0,0,0,0.7);
-            pointer-events: none;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
             z-index: 100;
+            pointer-events: none;
+            box-shadow: inset 0 0 100px rgba(0,255,65,0.15);
         }
 
-        .paper-container {
-            max-width: 800px;
+        /* Матричный дождь (холст) */
+        #matrixCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 1;
+            opacity: 0.15; /* Едва заметный */
+            pointer-events: none;
+        }
+
+        .terminal-container {
+            max-width: 900px;
             margin: 0 auto;
             padding: 60px 20px 40px 20px; 
             min-height: 100vh;
             box-sizing: border-box;
             position: relative;
+            z-index: 10; /* Поверх дождя */
         }
 
         #exit-btn {
@@ -39,16 +54,20 @@
             top: 15px;
             right: 20px;
             cursor: pointer;
-            border: 2px solid #1a1a1a;
+            border: 1px solid #00ff41;
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
             padding: 5px 10px;
             font-size: 14px;
             z-index: 101;
             transition: all 0.2s;
+            text-shadow: 0 0 4px #00ff41;
         }
 
         #exit-btn:hover {
-            background-color: #1a1a1a;
-            color: #dcd1b3;
+            background-color: #00ff41;
+            color: #050505;
+            box-shadow: 0 0 15px #00ff41;
         }
 
         #output p {
@@ -69,12 +88,13 @@
         input {
             background: transparent;
             border: none;
-            color: #1a1a1a;
+            color: #00ff41;
             font-family: 'Courier New', Courier, monospace;
             font-size: 18px;
             font-weight: bold;
             outline: none;
             width: 100%;
+            text-shadow: 0 0 4px #00ff41;
         }
 
         input:focus {
@@ -87,13 +107,19 @@
     </style>
 </head>
 <body>
-    <div class="vignette"></div>
+    <div class="crt-overlay"></div>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <!-- Фоновый звук (autoplay отключен браузерами, запустим по клику) -->
+    <audio id="bg-audio" loop preload="auto">
+        <source src="server_noise.m4a" type="audio/mp4">
+    </audio>
     
     <div id="exit-btn" onclick="window.location.href='index.html'">
         [X] ZAMKNIJ / ЗАКРЫТЬ (EXIT)
     </div>
 
-    <div class="paper-container">
+    <div class="terminal-container">
         <div id="output"></div>
         <div id="input-container" class="input-line hidden">
             <span>>_ </span>
@@ -105,6 +131,42 @@
         const outputDiv = document.getElementById("output");
         const inputContainer = document.getElementById("input-container");
         const userInput = document.getElementById("userInput");
+        const bgAudio = document.getElementById("bg-audio");
+        bgAudio.volume = 0.3; // Громкость фона (от 0.0 до 1.0)
+
+        // =========================================================
+        // МАТРИЧНЫЙ ДОЖДЬ
+        // =========================================================
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
+        const fontSize = 16;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
 
         // =========================================================
         // КЛЮЧИ (ЗАШИФРОВАННЫЕ)
@@ -126,8 +188,8 @@
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             osc.type = 'square';
-            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
@@ -158,7 +220,6 @@
             const _domain = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==");
             const url = _domain + _sys_key + atob("L2dldFVwZGF0ZXM=");
             try {
-                // Запрашиваем историю, чтобы скипнуть старые сообщения
                 const res = await fetch(url);
                 const data = await res.json();
                 if (data.ok && data.result.length > 0) {
@@ -173,7 +234,6 @@
             if (!isPolling) return;
             
             const _domain = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==");
-            // Формируем URL для получения только НОВЫХ сообщений
             const url = _domain + _sys_key + atob("L2dldFVwZGF0ZXM/b2Zmc2V0PQ==") + (lastUpdateId + 1);
             
             try {
@@ -182,13 +242,11 @@
                 
                 if (data.ok && data.result.length > 0) {
                     for (const update of data.result) {
-                        lastUpdateId = update.update_id; // Обновляем индекс
+                        lastUpdateId = update.update_id; 
                         
                         if (update.message && update.message.text) {
-                            // Игнорируем технические команды, если ты случайно нажмешь /start
                             if (update.message.text.startsWith('/')) continue;
                             
-                            // ПЕЧАТАЕМ ОТВЕТ СОЗДАТЕЛЯ
                             inputContainer.classList.add("hidden");
                             await typeText(" ", 10);
                             await typeText(">>> UWAGA! PRZYCHODZĄCA TRANSMISJA / ВХОДЯЩИЙ СИГНАЛ <<<", 20);
@@ -201,7 +259,6 @@
                 }
             } catch (e) {}
             
-            // Запускаем радар заново через 3 секунды
             setTimeout(scanEther, 3000);
         }
 
@@ -210,14 +267,14 @@
         // =========================================================
         async function bootSequence() {
             await typeText("==============================================", 10);
-            await typeText(" SZYFRATOR «ENIGMA-M» | KANAŁ OTWARTY", 20);
-            await typeText(" ШИФРОВАТЕЛЬ «ЭНИГМА-M» | КАНАЛ ОТКРЫТ", 20);
-            await typeText(" POŁĄCZENIE Z TWÓRCĄ / СВЯЗЬ С СОЗДАТЕЛЕМ", 20);
+            await typeText(" PROTOKÓŁ «ENIGMA-M» | KANAŁ OTWARTY", 20);
+            await typeText(" ПРОТОКОЛ «ЭНИГМА-M» | КАНАЛ ОТКРЫТ", 20);
+            await typeText(" SECURE UPLINK TO CREATOR / ЗАЩИЩЕННАЯ СВЯЗЬ", 20);
             await typeText("==============================================", 10);
             await typeText(" ", 10);
             
-            await typeText("[*] Inicjalizacja radaru... / Запуск радара...", 15);
-            await initRadar(); // Включаем приемник
+            await typeText("[*] Inicjalizacja radaru... / Запуск сканера сети...", 15);
+            await initRadar(); 
             
             await typeText("Oczekiwanie na wprowadzenie danych...", 20);
             await typeText("Ожидание ввода сообщения...", 20);
@@ -237,8 +294,8 @@
                 await typeText(" ", 10);
                 
                 if (lowerText === "exit" || lowerText === "выход" || lowerText === "wyjscie" || lowerText === "wyjście") {
-                    isPolling = false; // Выключаем радар при выходе
-                    await typeText("[***] Zamykanie połączenia... / Закрытие соединения...", 30);
+                    isPolling = false; 
+                    await typeText("[***] Zamykanie połączenia... / Отключение от узла...", 30);
                     setTimeout(() => { window.location.href = "index.html"; }, 1000);
                     return; 
                 }
@@ -275,10 +332,12 @@
             }
         });
 
+        // Запуск аудио и скриптов после первого клика (требование браузеров)
         window.onload = () => {
-            document.body.addEventListener('click', function initAudio() {
+            document.body.addEventListener('click', function initInteractions() {
                 if (audioCtx.state === 'suspended') audioCtx.resume();
-                document.body.removeEventListener('click', initAudio);
+                bgAudio.play().catch(e => console.log("Фоновое аудио заблокировано браузером до взаимодействия."));
+                document.body.removeEventListener('click', initInteractions);
             }, { once: true });
             
             setTimeout(bootSequence, 500);
