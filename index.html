@@ -1545,19 +1545,6 @@ function showHomeMenu(clearScreen = true) {
 playTrack('main'); // Возвращаем звук сервера в меню
 const menuText = `
 
-ГЛАВНОЕ МЕНЮ // MENU GŁÓWNE
-
-[01] ИСТОРИЯ // CZYTAJ HISTORIĘ
-Анатомия Глобального Развода // Anatomia Globalnego Oszustwa
-[02] НОВЫЙ РАССКАЗ // NOWE OPOWIADANIE
-Трасса 222: Подсказки от жизни // Trasa 222: Wskazówki od życia
-[03] НОВЫЙ РАССКАЗ // NOWE OPOWIADANIE
-Стресс-тест: Как система фильтрует юнитов // Stress-test: Jak system filtruje jednostки
-[04] ЗАМЕТКИ ЭМИГРАНТА // NOTATKI EMIGRANTA
-[05] ДОПРОС АЛГОРИТМА // PRZESŁUCHANIE ALGORYTMU
-[06] ПОИСК ПО БАЗЕ // SZUKAJ W BAZIE
-[07] СТАТУС СИСТЕМЫ // STATUS SYSTEMU
-
 КОМАНДЫ (EN) // KOMENDY (EN):
 story        - читать историю 1 // czytaj historię 1
 story2       - читать историю 2 // czytaj historię 2
@@ -1574,6 +1561,7 @@ scan         - сканирование сектора 539A // skanowanie sektor
 odstrzal     - статус ИИ-патронов // status AI-patronów
 patron [имя] - сменить ИИ-патрона // zmień AI-patrona (kozak, mozg, panika, smutek)
 music on/off - управление музыкой // sterowanie muzyką
+uplink       - защищенный канал Энигма // bezpieczny kanał Enigma
 help         - все команды // wszystkie komendy
 
 Любой другой текст будет отправлен ИИ-модулю для общения!
@@ -1583,7 +1571,7 @@ if (clearScreen) playView(menuText);
 else appendText(menuText);
 }
 
-const COMMANDS = ["home","story","story2","story3","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal","patron","music"];
+const COMMANDS = ["home","story","story2","story3","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal","patron","music","uplink","связь"];
 
 inputField.addEventListener("keydown", function(e) {
 if (e.key === "Enter") {
@@ -1626,6 +1614,35 @@ case "story2":
         }
         }, 60000);
     }, 1500);
+    });
+    break;
+case "story3":
+    playTrack('story3'); // Включаем музыку для истории 3
+    playView(STORY_3, () => {
+    printDroid("Жесткий код. Я бы так не смог. // Twardy kod.", "scanning", true, false);
+    });
+    break;
+case "notes": playView(IMMIGRANT_NOTES); break;
+case "projects": showProjects(); break;
+case "life": showLifeArchive(); break;
+case "files": showFiles(); break;
+case "search": if (!arg) { appendText("\nКоманда: search [слово]\n"); } else { searchArchive(arg); } break;
+case "open": if (!arg) { appendText("\nКоманда: open [ID]\n"); } else { openTarget(arg); } break;
+case "contact": showContact(); break;
+case "help": playView("\nКОМАНДЫ: home, story, story2, story3, notes, projects, life, files, search, open, scan, hack, contact, clear, patron [имя], uplink\n"); break;
+case "clear": output.innerHTML = ""; appendText("", () => printDroid("Экран очищен. // Ekran wyczyszczony.", "idle", true, false)); break;
+case "status": playView("\nСИСТЕМА: СТАБИЛЬНА // SYSTEM: STABILNY\nУЗЕЛ: 539A\n"); break;
+case "whoami": playView(`\nПРОФИЛЬ:\n${USER_PROFILE.name}\n${USER_PROFILE.location}\n`); break;
+case "about": playView(`\nДАННЫЕ ОБЪЕКТА:\n${USER_PROFILE.name}\n${USER_PROFILE.occupation.join(", ")}\n`); break;
+case "scan": runScan(); break;
+case "hack": startHack(); break;
+case "recover": recoverArchive(); break;
+case "uplink":
+case "связь":
+    playView("\n[***] Ustanawianie bezpiecznego połączenia... \n[***] Установка защищенного соединения...\n", () => {
+        setTimeout(() => {
+            window.location.href = "enigma.html";
+        }, 1500);
     });
     break;
 case "story3":
