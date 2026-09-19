@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENIGMA - KANAŁ / КАНАЛ</title>
+    <style>
+        body {
+            background-color: #dcd1b3; 
+            color: #1a1a1a;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+            font-weight: bold;
+            overflow-x: hidden;
+            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.2);
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.7);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .paper-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px 40px 20px; 
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        #exit-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            border: 2px solid #1a1a1a;
+            padding: 5px 10px;
+            font-size: 14px;
+            z-index: 101;
+            transition: all 0.2s;
+        }
+
+        #exit-btn:hover {
+            background-color: #1a1a1a;
+            color: #dcd1b3;
+        }
+
+        #output p {
+            margin: 5px 0;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .input-line {
+            display: flex;
+            margin-top: 15px;
+        }
+
+        .input-line span {
+            margin-right: 10px;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: #1a1a1a;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            font-weight: bold;
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="vignette"></div>
+    
+    <div id="exit-btn" onclick="window.location.href='index.html'">
+        [X] ZAMKNIJ / ЗАКРЫТЬ (EXIT)
+    </div>
+
+    <div class="paper-container">
+        <div id="output"></div>
+        <div id="input-container" class="input-line hidden">
+            <span>>_ </span>
+            <input type="text" id="userInput" autocomplete="off" autofocus>
+        </div>
+    </div>
+
+    <script>
+        const outputDiv = document.getElementById("output");
+        const inputContainer = document.getElementById("input-container");
+        const userInput = document.getElementById("userInput");
+
+        // =========================================================
+        // КЛЮЧИ (ЗАШИФРОВАННЫЕ)
+        // =========================================================
+        const _k1 = "ODg5NDc3ODk3NjpBQUhlU0kt";
+        const _k2 = "YzlUX3VpZU5mS2Zzdy16emZs";
+        const _k3 = "Nk04dHJfbEMtMA==";
+        const _target = "NDQwMjE0NjY5"; 
+        
+        const _sys_key = atob(_k1 + _k2 + _k3);
+        const _node_id = atob(_target);
+
+        // =========================================================
+        // АУДИО И ПЕЧАТЬ
+        // =========================================================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playKeystroke() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+        }
+
+        async function typeText(text, speed = 30) {
+            const p = document.createElement("p");
+            outputDiv.appendChild(p);
+            
+            for (let i = 0; i < text.length; i++) {
+                p.innerHTML += text.charAt(i) === " " ? "&nbsp;" : text.charAt(i);
+                if (text.charAt(i) !== " ") playKeystroke();
+                window.scrollTo(0, document.body.scrollHeight);
+                await new Promise(r => setTimeout(r, speed + Math.random() * 20));
+            }
+            return Promise.resolve();
+        }
+
+        // =========================================================
+        // РАДАР ВХОДЯЩИХ (POLLING)
+        // =========================================================
+        let lastUpdateId = 0;
+        let isPolling = false;
+
+        async function initRadar() {
+            const _domain = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==");
+            const url = _domain + _sys_key + atob("L2dldFVwZGF0ZXM=");
+            try {
+                // Запрашиваем историю, чтобы скипнуть старые сообщения
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.ok && data.result.length > 0) {
+                    lastUpdateId = data.result[data.result.length - 1].update_id;
+                }
+            } catch (e) {}
+            isPolling = true;
+            scanEther();
+        }
+
+        async function scanEther() {
+            if (!isPolling) return;
+            
+            const _domain = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==");
+            // Формируем URL для получения только НОВЫХ сообщений
+            const url = _domain + _sys_key + atob("L2dldFVwZGF0ZXM/b2Zmc2V0PQ==") + (lastUpdateId + 1);
+            
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.ok && data.result.length > 0) {
+                    for (const update of data.result) {
+                        lastUpdateId = update.update_id; // Обновляем индекс
+                        
+                        if (update.message && update.message.text) {
+                            // Игнорируем технические команды, если ты случайно нажмешь /start
+                            if (update.message.text.startsWith('/')) continue;
+                            
+                            // ПЕЧАТАЕМ ОТВЕТ СОЗДАТЕЛЯ
+                            inputContainer.classList.add("hidden");
+                            await typeText(" ", 10);
+                            await typeText(">>> UWAGA! PRZYCHODZĄCA TRANSMISJA / ВХОДЯЩИЙ СИГНАЛ <<<", 20);
+                            await typeText(`[CREATOR / СОЗДАТЕЛЬ]: ${update.message.text}`, 40);
+                            await typeText(" ", 10);
+                            inputContainer.classList.remove("hidden");
+                            userInput.focus();
+                        }
+                    }
+                }
+            } catch (e) {}
+            
+            // Запускаем радар заново через 3 секунды
+            setTimeout(scanEther, 3000);
+        }
+
+        // =========================================================
+        // ЗАПУСК И ОТПРАВКА
+        // =========================================================
+        async function bootSequence() {
+            await typeText("==============================================", 10);
+            await typeText(" SZYFRATOR «ENIGMA-M» | KANAŁ OTWARTY", 20);
+            await typeText(" ШИФРОВАТЕЛЬ «ЭНИГМА-M» | КАНАЛ ОТКРЫТ", 20);
+            await typeText(" POŁĄCZENIE Z TWÓRCĄ / СВЯЗЬ С СОЗДАТЕЛЕМ", 20);
+            await typeText("==============================================", 10);
+            await typeText(" ", 10);
+            
+            await typeText("[*] Inicjalizacja radaru... / Запуск радара...", 15);
+            await initRadar(); // Включаем приемник
+            
+            await typeText("Oczekiwanie na wprowadzenie danych...", 20);
+            await typeText("Ожидание ввода сообщения...", 20);
+            
+            inputContainer.classList.remove("hidden");
+            userInput.focus();
+        }
+
+        userInput.addEventListener("keypress", async function(e) {
+            if (e.key === "Enter" && this.value.trim() !== "") {
+                const text = this.value.trim();
+                const lowerText = text.toLowerCase();
+                this.value = "";
+                inputContainer.classList.add("hidden"); 
+                
+                await typeText(">_ " + text, 15);
+                await typeText(" ", 10);
+                
+                if (lowerText === "exit" || lowerText === "выход" || lowerText === "wyjscie" || lowerText === "wyjście") {
+                    isPolling = false; // Выключаем радар при выходе
+                    await typeText("[***] Zamykanie połączenia... / Закрытие соединения...", 30);
+                    setTimeout(() => { window.location.href = "index.html"; }, 1000);
+                    return; 
+                }
+                
+                await typeText("[***] Szyfrowanie i transmisja pakietu...", 30);
+                
+                const _domain_part1 = "aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==";
+                const _domain_part2 = "L3NlbmRNZXNzYWdl";
+                const endpoint = atob(_domain_part1) + _sys_key + atob(_domain_part2);
+
+                try {
+                    fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: _node_id,
+                            text: `📟 **ENIGMA UPLINK**\n_${text}_`,
+                            parse_mode: "Markdown"
+                        })
+                    });
+                } catch (error) {}
+
+                setTimeout(async () => {
+                    await typeText(">>> PAKIET DOSTARCZONY / ПАКЕТ ДОСТАВЛЕН", 20);
+                    inputContainer.classList.remove("hidden");
+                    userInput.focus();
+                }, 1500);
+            }
+        });
+
+        document.addEventListener("click", (e) => {
+            if (e.target.id !== "exit-btn" && !inputContainer.classList.contains("hidden")) {
+                userInput.focus();
+            }
+        });
+
+        window.onload = () => {
+            document.body.addEventListener('click', function initAudio() {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                document.body.removeEventListener('click', initAudio);
+            }, { once: true });
+            
+            setTimeout(bootSequence, 500);
+        };
+    </script>
+</body>
+</html>
