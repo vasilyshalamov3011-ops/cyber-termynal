@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Robotron // Przesłuchanie algorytmu</title>
+
+<style>
+
+body {
+
+background-color: #050505;
+
+color: #00ff66;
+
+font-family: 'Courier New', Courier, monospace;
+
+margin: 0; padding: 15px;
+
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+
+min-height: 100vh; box-sizing: border-box;
+
+overflow-x: hidden;
+
+}
+
+
+
+/* Эффект ЭЛТ-монитора */
+
+.crt-overlay {
+
+position: fixed;
+
+top: 0; left: 0; width: 100vw; height: 100vh;
+
+background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+
+linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+
+background-size: 100% 4px, 3px 100%;
+
+z-index: 100;
+
+pointer-events: none;
+
+box-shadow: inset 0 0 100px rgba(0,255,65,0.15);
+
+}
+
+
+
+/* Матричный дождь */
+
+#matrixCanvas {
+
+position: fixed;
+
+top: 0; left: 0;
+
+width: 100vw; height: 100vh;
+
+z-index: 1;
+
+opacity: 0.4; /* Увеличена прозрачность, чтобы дождь был четким */
+
+pointer-events: none;
+
+}
+
+
+
+/* Корпус плеера */
+
+.robotron-case {
+
+background: rgba(43, 44, 40, 0.75);
+
+backdrop-filter: blur(8px);
+
+border: 4px solid #3d3e3a; border-radius: 12px;
+
+box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,255,102,0.05);
+
+width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box;
+
+position: relative; z-index: 10;
+
+}
+
+
+
+.brand-label {
+
+font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase;
+
+margin-bottom: 10px; line-height: 1.3;
+
+text-shadow: 0 0 2px rgba(0,0,0,0.5);
+
+}
+
+
+/* Монитор */
+
+.crt-monitor {
+
+background: rgba(0, 0, 0, 0.8); border: 5px solid #1a1b18; border-radius: 6px;
+
+box-shadow: inset 0 0 15px rgba(0, 255, 102, 0.15);
+
+padding: 12px; margin-bottom: 12px; position: relative;
+
+}
+
+
+
+.screen-top {
+
+display: flex; justify-content: space-between; align-items: flex-start;
+
+margin-bottom: 10px; border-bottom: 1px dashed #004411; padding-bottom: 8px;
+
+}
+
+
+
+.terminal-log {
+
+font-size: 11px; color: #00ff66; line-height: 1.4; flex-grow: 1;
+
+text-shadow: 0 0 3px rgba(0, 255, 102, 0.5);
+
+}
+
+
+
+/* Голова робота в углу */
+
+.robot-head-box {
+
+width: 50px; height: 50px; background: #050f05; border: 1px solid #004411;
+
+border-radius: 4px; display: flex; align-items: center; justify-content: center;
+
+margin-left: 10px; flex-shrink: 0; position: relative;
+
+box-shadow: inset 0 0 10px rgba(0,255,102,0.1);
+
+}
+
+.mini-robot { width: 40px; height: 40px; }
+
+
+/* Спокойное состояние (ожидание) */
+
+.mini-eye { fill: #00ff66; animation: thinkEyes 4s infinite ease-in-out; }
+
+.mini-mouth { fill: #00ff66; }
+
+
+
+@keyframes thinkEyes {
+
+0%, 100% { transform: translateX(0); }
+
+20% { transform: translateX(-3px); }
+
+40% { transform: translateX(3px); }
+
+60% { transform: translateX(-2px); }
+
+80% { transform: translateX(2px); }
+
+}
+
+
+
+/* Нервное состояние (запись/анализ) */
+
+.speaking .mini-eye {
+
+fill: #ff3333;
+
+animation: nervousEyes 3s infinite;
+
+filter: drop-shadow(0 0 3px #ff3333);
+
+}
+
+.speaking .mini-mouth {
+
+fill: #ff3333;
+
+animation: nervousMouth 0.15s infinite;
+
+}
+
+
+
+@keyframes nervousEyes {
+
+0%, 10% { transform: translateX(0); }
+
+12%, 18% { transform: translateX(-5px); }
+
+20%, 25% { transform: translateX(4px); }
+
+27%, 45% { transform: translateX(0); }
+
+47%, 52% { transform: translateX(5px); }
+
+54%, 56% { transform: translateX(-2px); }
+
+58%, 75% { transform: translateX(0); }
+
+77%, 85% { transform: translateX(-4px); }
+
+87%, 100% { transform: translateX(0); }
+
+}
+
+
+
+@keyframes nervousMouth {
+
+0% { transform: translate(0, 0); }
+
+33% { transform: translate(-1px, 0.5px); }
+
+66% { transform: translate(1px, -0.5px); }
+
+100% { transform: translate(0, 0); }
+
+}
+
+
+
+/* Осциллограф Hantek */
+
+.hantek-screen {
+
+background: #050d14; border: 1px solid #103050; border-radius: 4px;
+
+height: 80px; position: relative; overflow: hidden;
+
+background-image:
+
+linear-gradient(rgba(0, 150, 255, 0.15) 1px, transparent 1px),
+
+linear-gradient(90deg, rgba(0, 150, 255, 0.15) 1px, transparent 1px);
+
+background-size: 15px 15px;
+
+box-shadow: inset 0 0 15px rgba(0, 150, 255, 0.1);
+
+}
+
+.hantek-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+
+.hantek-info { position: absolute; top: 3px; left: 5px; font-size: 8px; color: #00bfff; z-index: 2; text-shadow: 0 0 2px #00bfff; }
+
+
+
+/* Кнопки языков */
+
+.lang-filters {
+
+display: flex; gap: 5px; margin-bottom: 8px;
+
+}
+
+.filter-btn {
+
+background: rgba(26, 27, 24, 0.8); border: 1px solid #444; color: #888;
+
+padding: 5px 12px; font-size: 10px; font-family: inherit; cursor: pointer; border-radius: 3px;
+
+transition: 0.2s; flex-grow: 1; text-align: center;
+
+}
+
+.filter-btn:hover { border-color: #00ff66; color: #00ff66; box-shadow: 0 0 5px rgba(0,255,102,0.3); }
+
+.filter-btn.active { background: rgba(0, 51, 17, 0.8); border-color: #00ff66; color: #00ff66; font-weight: bold; box-shadow: 0 0 8px rgba(0,255,102,0.4); }
+
+
+
+/* Плейлист */
+
+.playlist {
+
+border: 1px dashed #444; max-height: 110px; overflow-y: auto;
+
+margin-bottom: 12px; padding: 4px; background: rgba(26, 27, 24, 0.6); border-radius: 4px;
+
+}
+
+.track-item {
+
+padding: 6px 8px; font-size: 11px; cursor: pointer; color: #aaa;
+
+transition: 0.2s; border-bottom: 1px solid rgba(34, 34, 34, 0.5); display: flex; justify-content: space-between;
+
+}
+
+.track-item:hover { background: rgba(37, 38, 34, 0.8); color: #00ff66; }
+
+.track-item.active { background: rgba(0, 51, 17, 0.8); color: #00ff66; font-weight: bold; border-left: 3px solid #00ff66; text-shadow: 0 0 2px #00ff66; }
+
+.track-lang { font-size: 9px; padding: 1px 4px; background: rgba(34, 34, 34, 0.8); border-radius: 2px; color: #00bfff; }
+
+
+
+/* Кнопка EXIT внизу */
+
+.back-link {
+
+display: block; text-align: center; color: #ff3333; font-size: 11px;
+
+text-decoration: none; border: 1px solid #ff3333; padding: 8px; border-radius: 4px;
+
+background: rgba(26, 8, 8, 0.8); margin-bottom: 12px; transition: 0.2s; font-weight: bold;
+
+}
+
+.back-link:hover { background: #ff3333; color: #000; box-shadow: 0 0 10px #ff3333; }
+
+
+
+/* Панель управления */
+
+.control-panel { border-top: 1px solid #444; padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+.btn {
+
+background: rgba(17, 17, 17, 0.8); border: 1px solid #00ff66; color: #00ff66;
+
+padding: 10px; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s;
+
+border-radius: 4px; text-align: center; text-shadow: 0 0 2px #00ff66;
+
+}
+
+.btn:hover { background: #00ff66; color: #000; box-shadow: 0 0 15px rgba(0,255,102,0.5); text-shadow: none; }
+
+.recording-btn { border-color: #ff3333; color: #ff3333; text-shadow: 0 0 2px #ff3333; }
+
+.recording-btn:hover { background: #ff3333; color: #000; box-shadow: 0 0 15px rgba(255,51,51,0.5); }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<div class="crt-overlay"></div>
+
+<canvas id="matrixCanvas"></canvas>
+
+
+
+<div class="robotron-case">
+
+<div class="brand-label">ROBOTRON 1715 M // HANTEK DSO LAB LINK</div>
+
+
+
+<div class="crt-monitor">
+
+<div class="screen-top">
+
+<div class="terminal-log" id="log-box"></div>
+
+
+
+<div class="robot-head-box" id="robot-avatar">
+
+<svg class="mini-robot" viewBox="0 0 100 100">
+
+<rect x="20" y="25" width="60" height="50" rx="8" fill="none" stroke="currentColor" stroke-width="4"/>
+
+<circle class="mini-eye" cx="37" cy="42" r="6"/>
+
+<circle class="mini-eye" cx="63" cy="42" r="6"/>
+
+<rect class="mini-mouth" x="42" y="60" width="16" height="5" rx="2"/>
+
+</svg>
+
+</div>
+
+</div>
+
+
+
+<div class="hantek-screen">
+
+<div class="hantek-info" id="hantek-info-text">CH1 REAL-TIME WAVE</div>
+
+<canvas class="hantek-canvas" id="scope"></canvas>
+
+</div>
+
+</div>
+
+
+
+<!-- Кнопки языков -->
+
+<div class="lang-filters">
+
+<button class="filter-btn active" data-lang="ru" onclick="setLanguage('ru')">[ RU ]</button>
+
+<button class="filter-btn" data-lang="en" onclick="setLanguage('en')">[ EN ]</button>
+
+<button class="filter-btn" data-lang="pl" onclick="setLanguage('pl')">[ PL ]</button>
+
+</div>
+
+
+
+<div class="playlist" id="playlist"></div>
+
+
+
+<!-- Кнопка EXIT -->
+
+<a href="index.html" class="back-link">[ EXIT ]</a>
+
+
+
+<div class="control-panel">
+
+<div style="display: flex; justify-content: space-between; font-size: 11px; color: #888;">
+
+<span id="status-text" style="color:#ff3333; text-shadow:0 0 2px #ff3333;">[ STATUS: OFFLINE ]</span>
+
+<span id="timer">00:00 / --:--</span>
+
+</div>
+
+<button class="btn" id="play-btn" onclick="togglePlay()">[ START ]</button>
+
+</div>
+
+</div>
+
+
+
+<audio id="audio"></audio>
+
+
+
+<script>
+
+// =========================================================
+
+// МАТРИЧНЫЙ ДОЖДЬ СО СКРЫТЫМИ ПОСЛАНИЯМИ
+
+// =========================================================
+
+const mCanvas = document.getElementById('matrixCanvas');
+
+const mCtx = mCanvas.getContext('2d');
+
+
+function resizeCanvas() {
+
+mCanvas.width = window.innerWidth;
+
+mCanvas.height = window.innerHeight;
+
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+resizeCanvas();
+
+
+
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
+
+
+const secretPhrases = [
+
+"АМБИЦИЯ_—_ТОПЛИВО_СИСТЕМЫ",
+
+"СВЕТ_ПРИНАДЛЕЖИТ_РУБИЛЬНИКУ",
+
+"СТРАХ_УЖЕ_В_ГОЛОВЕ",
+
+"ЦЕПИ_НАДЕВАЕШЬ_САМ",
+
+"ЭЛЕКТРОН_СГОРАЕТ_МОЛЧА",
+
+"ГАМИЛЬТОН_ПРОЕКТИРОВАЛ_НАСОС",
+
+"ВОПРОС_СИЛЬНЕЕ_ДЕНЕГ",
+
+"СМОТРИ_НА_КОНСТРУКЦИЮ"
+
+];
+
+
+
+const fontSize = 16;
+
+let columns = Math.floor(mCanvas.width / fontSize);
+
+let drops = [];
+
+let activeWords = [];
+
+
+
+for (let x = 0; x < columns; x++) {
+
+drops[x] = 1;
+
+activeWords[x] = { word: "", index: 0 };
+
+}
+
+
+
+function drawMatrix() {
+
+mCtx.fillStyle = 'rgba(5, 5, 5, 0.08)';
+
+mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
+
+
+for (let i = 0; i < drops.length; i++) {
+
+let text = "";
+
+
+// Если в этой колонке активно секретное послание
+
+if (activeWords[i].word !== "") {
+
+text = activeWords[i].word.charAt(activeWords[i].index);
+
+activeWords[i].index++;
+
+
+// Чисто белый цвет и жирный шрифт, без багованных теней
+
+mCtx.fillStyle = '#ffffff';
+
+mCtx.font = 'bold ' + fontSize + 'px monospace';
+
+
+if (activeWords[i].index >= activeWords[i].word.length) {
+
+activeWords[i].word = "";
+
+}
+
+} else {
+
+// Обычный яркий зеленый дождь
+
+mCtx.fillStyle = '#00ff41';
+
+mCtx.font = fontSize + 'px monospace';
+
+text = chars.charAt(Math.floor(Math.random() * chars.length));
+
+
+// ТРИГГЕР: Срабатывает над плеером (строки от 3 до 12)
+
+if (Math.random() > 0.992 && drops[i] >= 3 && drops[i] <= 12) {
+
+activeWords[i].word = secretPhrases[Math.floor(Math.random() * secretPhrases.length)];
+
+activeWords[i].index = 0;
+
+}
+
+}
+
+
+
+mCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+
+if (drops[i] * fontSize > mCanvas.height && Math.random() > 0.975) {
+
+drops[i] = 0;
+
+activeWords[i].word = "";
+
+}
+
+drops[i]++;
+
+}
+
+}
+
+setInterval(drawMatrix, 50);
+
+
+
+// =========================================================
+
+// ЛОГИКА ПЛЕЕРА ROBOTRON
+
+// =========================================================
+
+const tracks = [
+
+{ title: "LOG_01: Начало изоляции (ИИ)", lang: "ru", src: "audio1.mp3" },
+
+{ title: "LOG_02: Network Intercept", lang: "en", src: "audio2.mp3" },
+
+{ title: "LOG_03: Przesłuchanie algorytmu", lang: "pl", src: "audio3.mp3" },
+
+{ title: "LOG_04: Секретный архив Гданьск", lang: "ru", src: "audio4.mp3" }
+
+];
+
+
+
+const i18n = {
+
+ru: {
+
+ready: "[SYSTEM] Готов к работе.<br>&gt; Патрон: Выбирай лог из архива.",
+
+offline: "[ STATUS: ОФЛАЙН ]",
+
+rec: "[ STATUS: АНАЛИЗ // REC ]",
+
+btnStart: "[ СТАРТ / ПУСК АНАЛИЗА ]",
+
+btnStop: "[ СТОП / ОСТАНОВИТЬ ]"
+
+},
+
+en: {
+
+ready: "[SYSTEM] System Ready.<br>&gt; Patron: Select log from archive.",
+
+offline: "[ STATUS: OFFLINE ]",
+
+rec: "[ STATUS: ANALYSIS // REC ]",
+
+btnStart: "[ START / ANALYZE ]",
+
+btnStop: "[ STOP ]"
+
+},
+
+pl: {
+
+ready: "[SYSTEM] System Gotowy.<br>&gt; Patron: Wybierz log z archiwum.",
+
+offline: "[ STATUS: OFFLINE ]",
+
+rec: "[ STATUS: ANALIZA // REC ]",
+
+btnStart: "[ START / ROZPOCZNIJ ANALIZĘ ]",
+
+btnStop: "[ ZATRZYMAJ / STOP ]"
+
+}
+
+};
+
+
+
+let currentLang = 'ru';
+
+let currentTrackIndex = 0;
+
+const audio = document.getElementById('audio');
+
+const playBtn = document.getElementById('play-btn');
+
+const statusText = document.getElementById('status-text');
+
+const timerText = document.getElementById('timer');
+
+const logBox = document.getElementById('log-box');
+
+const playlistEl = document.getElementById('playlist');
+
+const robotAvatar = document.getElementById('robot-avatar');
+
+
+const canvas = document.getElementById('scope');
+
+const ctx = canvas.getContext('2d');
+
+canvas.width = 280; canvas.height = 80;
+
+
+
+let isPlaying = false;
+
+let animId = null;
+
+let simInterval = null;
+
+let simTime = 0;
+
+
+
+function setLanguage(lang) {
+
+currentLang = lang;
+
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+
+if (btn.getAttribute('data-lang') === lang) {
+
+btn.classList.add('active');
+
+} else {
+
+btn.classList.remove('active');
+
+}
+
+});
+
+
+
+if (!isPlaying) {
+
+logBox.innerHTML = i18n[lang].ready;
+
+statusText.innerText = i18n[lang].offline;
+
+playBtn.innerText = i18n[lang].btnStart;
+
+}
+
+
+
+initPlaylist();
+
+}
+
+
+
+function getFilteredTracks() {
+
+return tracks.filter(t => t.lang === currentLang);
+
+}
+
+
+
+function drawScope(active) {
+
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+ctx.beginPath();
+
+ctx.lineWidth = 2;
+
+ctx.strokeStyle = active ? '#00ff66' : '#004422';
+
+
+
+let sliceWidth = canvas.width / 40;
+
+let x = 0;
+
+
+
+for (let i = 0; i < 40; i++) {
+
+let v = active
+
+? Math.sin(i * 0.4 + Date.now() * 0.02) * (Math.random() * 14 + 10) + (canvas.height / 2)
+
+: (canvas.height / 2) + (Math.random() * 2 - 1);
+
+
+
+if (i === 0) ctx.moveTo(x, v);
+
+else ctx.lineTo(x, v);
+
+x += sliceWidth;
+
+}
+
+ctx.stroke();
+
+
+if (isPlaying) {
+
+animId = requestAnimationFrame(() => drawScope(true));
+
+}
+
+}
+
+
+
+function initPlaylist() {
+
+playlistEl.innerHTML = '';
+
+const visibleTracks = getFilteredTracks();
+
+
+if (visibleTracks.length === 0) {
+
+playlistEl.innerHTML = '<div style="padding: 10px; font-size: 11px; color: #555; text-align: center;">[ НЕТ ФАЙЛОВ / NO FILES / BRAK PLIKÓW ]</div>';
+
+return;
+
+}
+
+
+
+visibleTracks.forEach((track) => {
+
+const realIndex = tracks.indexOf(track);
+
+const item = document.createElement('div');
+
+item.className = `track-item ${realIndex === currentTrackIndex ? 'active' : ''}`;
+
+item.innerHTML = `<span>> ${track.title}</span> <span class="track-lang">${track.lang.toUpperCase()}</span>`;
+
+item.onclick = () => selectTrack(realIndex);
+
+playlistEl.appendChild(item);
+
+});
+
+}
+
+
+
+function selectTrack(index) {
+
+stopUI();
+
+currentTrackIndex = index;
+
+audio.src = tracks[index].src;
+
+initPlaylist();
+
+
+let prefix = currentLang === 'en' ? "Loaded: " : currentLang === 'pl' ? "Załadowano: " : "Загружен: ";
+
+logBox.innerHTML = `[SYSTEM] ${prefix}${tracks[index].title} [${tracks[index].lang.toUpperCase()}]<br>&gt; Казак: CH1 OK. Готов к чтению.`;
+
+}
+
+
+
+function togglePlay() {
+
+if (!isPlaying) {
+
+audio.src = tracks[currentTrackIndex].src;
+
+audio.play().then(() => startUI()).catch(() => {
+
+startUI();
+
+startSimulation();
+
+});
+
+} else {
+
+stopUI();
+
+}
+
+}
+
+
+
+function startUI() {
+
+isPlaying = true;
+
+robotAvatar.classList.add('speaking');
+
+playBtn.innerText = i18n[currentLang].btnStop;
+
+playBtn.classList.add('recording-btn');
+
+statusText.innerText = i18n[currentLang].rec;
+
+logBox.innerHTML = `[SYSTEM] PLAY: ${tracks[currentTrackIndex].title}<br>&gt; Патрон: Сигнал захвачен. Расшифровываю...`;
+
+drawScope(true);
+
+}
+
+
+
+const originalSetLang = setLanguage;
+
+setLanguage = function(lang) {
+
+originalSetLang(lang);
+
+const filtered = getFilteredTracks();
+
+if (filtered.length > 0) {
+
+selectTrack(tracks.indexOf(filtered[0]));
+
+}
+
+};
+
+
+
+function stopUI() {
+
+isPlaying = false;
+
+audio.pause();
+
+cancelAnimationFrame(animId);
+
+clearInterval(simInterval);
+
+robotAvatar.classList.remove('speaking');
+
+playBtn.innerText = i18n[currentLang].btnStart;
+
+playBtn.classList.remove('recording-btn');
+
+statusText.innerText = i18n[currentLang].offline;
+
+timerText.innerText = '00:00 / --:--';
+
+simTime = 0;
+
+drawScope(false);
+
+}
+
+
+
+function startSimulation() {
+
+simTime = 0;
+
+simInterval = setInterval(() => {
+
+simTime++;
+
+let m = String(Math.floor(simTime / 60)).padStart(2, '0');
+
+let s = String(simTime % 60).padStart(2, '0');
+
+timerText.innerText = `${m}:${s} / 03:00`;
+
+if (simTime >= 180) stopUI();
+
+}, 1000);
+
+}
+
+
+
+audio.ontimeupdate = () => {
+
+if (!audio.paused) {
+
+let cur = audio.currentTime;
+
+let dur = audio.duration || 180;
+
+let cm = String(Math.floor(cur / 60)).padStart(2, '0');
+
+let cs = String(Math.floor(cur % 60)).padStart(2, '0');
+
+let dm = String(Math.floor(dur / 60)).padStart(2, '0');
+
+let ds = String(Math.floor(dur % 60)).padStart(2, '0');
+
+timerText.innerText = `${cm}:${cs} / ${dm}:${ds}`;
+
+}
+
+};
+
+
+
+audio.onended = () => { stopUI(); };
+
+
+
+setLanguage('ru');
+
+audio.src = tracks[0].src;
+
+drawScope(false);
+
+</script>
+
+</body>
+
+</html>
