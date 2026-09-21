@@ -1,685 +1,1382 @@
 <!DOCTYPE html>
+
 <html lang="ru">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Robotron // Przesłuchanie algorytmu</title>
+
 <style>
+
 body {
+
 background-color: #050505;
+
 color: #00ff66;
+
 font-family: 'Courier New', Courier, monospace;
+
 margin: 0; padding: 15px;
+
 display: flex; flex-direction: column; align-items: center; justify-content: center;
+
 min-height: 100vh; box-sizing: border-box;
+
 overflow-x: hidden;
+
 }
 
-/* CRT-оверлей — ослабленные сканлайны */
+
+
 .crt-overlay {
+
 position: fixed;
+
 top: 0; left: 0; width: 100vw; height: 100vh;
+
 background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.08) 50%),
+
 linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.015), rgba(0, 0, 255, 0.04));
+
 background-size: 100% 4px, 3px 100%;
+
 z-index: 100;
+
 pointer-events: none;
+
 box-shadow: inset 0 0 100px rgba(0,255,65,0.12);
+
 }
+
+
 
 #matrixCanvas {
+
 position: fixed;
+
 top: 0; left: 0;
+
 width: 100vw; height: 100vh;
+
 z-index: 1;
+
 opacity: 0.4;
+
 pointer-events: none;
+
 }
+
+
 
 .robotron-case {
+
 background: rgba(43, 44, 40, 0.75);
+
+backdrop-filter: blur(8px);
+
 border: 4px solid #3d3e3a; border-radius: 12px;
+
 box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,255,102,0.05);
+
 width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box;
+
 position: relative; z-index: 10;
+
 }
+
+
 
 .brand-label {
+
 font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase;
+
 margin-bottom: 10px; line-height: 1.3;
-text-shadow: 0 0 2px rgba(0,0,0,0.5);
+
 }
+
+
 
 .crt-monitor {
+
 background: rgba(0, 0, 0, 0.85); border: 5px solid #1a1b18; border-radius: 6px;
+
 box-shadow: inset 0 0 15px rgba(0, 255, 102, 0.15);
+
 padding: 12px; margin-bottom: 12px; position: relative;
+
 }
+
+
 
 .screen-top {
+
 display: flex; justify-content: space-between; align-items: flex-start;
+
 margin-bottom: 10px; border-bottom: 1px dashed #004411; padding-bottom: 8px;
+
 }
 
-/* Чёткий текст на экране */
+
+
 .terminal-log {
+
 font-size: 12px;
+
 font-weight: bold;
+
 color: #00ff66;
+
 line-height: 1.45;
+
 letter-spacing: 0.3px;
+
 flex-grow: 1;
-text-shadow: 
-    0 0 4px rgba(0, 255, 102, 0.9),
-    0 0 1px #00ff66;
+
+text-shadow: 0 0 4px rgba(0, 255, 102, 0.9), 0 0 1px #00ff66;
+
 }
+
+
 
 .robot-head-box {
+
 width: 50px; height: 50px; background: #050f05; border: 1px solid #004411;
+
 border-radius: 4px; display: flex; align-items: center; justify-content: center;
-margin-left: 10px; flex-shrink: 0; position: relative;
+
+margin-left: 10px; flex-shrink: 0;
+
 box-shadow: inset 0 0 10px rgba(0,255,102,0.1);
+
 }
+
 .mini-robot { width: 40px; height: 40px; }
 
 .mini-eye { fill: #00ff66; animation: thinkEyes 4s infinite ease-in-out; }
+
 .mini-mouth { fill: #00ff66; }
 
+
+
 @keyframes thinkEyes {
+
 0%, 100% { transform: translateX(0); }
+
 20% { transform: translateX(-3px); }
+
 40% { transform: translateX(3px); }
+
 60% { transform: translateX(-2px); }
+
 80% { transform: translateX(2px); }
+
 }
+
+
 
 .speaking .mini-eye {
+
 fill: #ff3333;
+
 animation: nervousEyes 3s infinite;
+
 filter: drop-shadow(0 0 3px #ff3333);
+
 }
+
 .speaking .mini-mouth {
+
 fill: #ff3333;
+
 animation: nervousMouth 0.15s infinite;
+
 }
+
+
 
 @keyframes nervousEyes {
+
 0%, 10% { transform: translateX(0); }
+
 12%, 18% { transform: translateX(-5px); }
+
 20%, 25% { transform: translateX(4px); }
+
 27%, 45% { transform: translateX(0); }
+
 47%, 52% { transform: translateX(5px); }
+
 54%, 56% { transform: translateX(-2px); }
+
 58%, 75% { transform: translateX(0); }
+
 77%, 85% { transform: translateX(-4px); }
+
 87%, 100% { transform: translateX(0); }
+
 }
+
+
 
 @keyframes nervousMouth {
+
 0% { transform: translate(0, 0); }
+
 33% { transform: translate(-1px, 0.5px); }
+
 66% { transform: translate(1px, -0.5px); }
+
 100% { transform: translate(0, 0); }
+
 }
+
+
 
 .hantek-screen {
+
 background: #050d14; border: 1px solid #103050; border-radius: 4px;
+
 height: 80px; position: relative; overflow: hidden;
+
 background-image:
+
 linear-gradient(rgba(0, 150, 255, 0.15) 1px, transparent 1px),
+
 linear-gradient(90deg, rgba(0, 150, 255, 0.15) 1px, transparent 1px);
+
 background-size: 15px 15px;
+
 box-shadow: inset 0 0 15px rgba(0, 150, 255, 0.1);
+
 }
+
 .hantek-canvas { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-.hantek-info { 
-position: absolute; top: 3px; left: 5px; 
-font-size: 9px; color: #00bfff; z-index: 2; 
+
+.hantek-info {
+
+position: absolute; top: 3px; left: 5px;
+
+font-size: 9px; color: #00bfff; z-index: 2;
+
 text-shadow: 0 0 3px #00bfff;
+
 font-weight: bold;
+
 }
+
+
+
+/* === КРАСНАЯ КНОПКА РАЗБЛОКИРОВКИ === */
+
+.unlock-overlay {
+
+position: absolute;
+
+inset: 0;
+
+background: rgba(0,0,0,0.85);
+
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+z-index: 50;
+
+border-radius: 4px;
+
+}
+
+
+
+.unlock-btn {
+
+background: #8b0000;
+
+border: 3px solid #ff3333;
+
+color: #ffcccc;
+
+font-family: inherit;
+
+font-size: 14px;
+
+font-weight: bold;
+
+padding: 18px 28px;
+
+cursor: pointer;
+
+border-radius: 6px;
+
+text-shadow: 0 0 8px #ff0000;
+
+box-shadow: 0 0 20px rgba(255,0,0,0.5), inset 0 0 15px rgba(255,50,50,0.3);
+
+transition: 0.2s;
+
+letter-spacing: 1px;
+
+text-align: center;
+
+line-height: 1.4;
+
+}
+
+
+
+.unlock-btn:hover {
+
+background: #ff2222;
+
+color: #000;
+
+box-shadow: 0 0 30px #ff3333;
+
+}
+
+
 
 .lang-filters {
+
 display: flex; gap: 5px; margin-bottom: 8px;
+
 }
+
 .filter-btn {
+
 background: rgba(26, 27, 24, 0.8); border: 1px solid #444; color: #888;
+
 padding: 5px 12px; font-size: 10px; font-family: inherit; cursor: pointer; border-radius: 3px;
+
 transition: 0.2s; flex-grow: 1; text-align: center;
+
 }
-.filter-btn:hover { border-color: #00ff66; color: #00ff66; box-shadow: 0 0 5px rgba(0,255,102,0.3); }
-.filter-btn.active { background: rgba(0, 51, 17, 0.8); border-color: #00ff66; color: #00ff66; font-weight: bold; box-shadow: 0 0 8px rgba(0,255,102,0.4); }
+
+.filter-btn:hover { border-color: #00ff66; color: #00ff66; }
+
+.filter-btn.active { background: rgba(0, 51, 17, 0.8); border-color: #00ff66; color: #00ff66; font-weight: bold; }
+
+
 
 .playlist {
+
 border: 1px dashed #444; max-height: 110px; overflow-y: auto;
+
 margin-bottom: 12px; padding: 4px; background: rgba(26, 27, 24, 0.6); border-radius: 4px;
+
 }
+
 .track-item {
+
 padding: 6px 8px; font-size: 11px; cursor: pointer; color: #aaa;
+
 transition: 0.2s; border-bottom: 1px solid rgba(34, 34, 34, 0.5); display: flex; justify-content: space-between;
+
 }
+
 .track-item:hover { background: rgba(37, 38, 34, 0.8); color: #00ff66; }
-.track-item.active { background: rgba(0, 51, 17, 0.8); color: #00ff66; font-weight: bold; border-left: 3px solid #00ff66; text-shadow: 0 0 2px #00ff66; }
+
+.track-item.active { background: rgba(0, 51, 17, 0.8); color: #00ff66; font-weight: bold; border-left: 3px solid #00ff66; }
+
 .track-lang { font-size: 9px; padding: 1px 4px; background: rgba(34, 34, 34, 0.8); border-radius: 2px; color: #00bfff; }
 
-.back-link {
-display: block; text-align: center; color: #ff3333; font-size: 11px;
-text-decoration: none; border: 1px solid #ff3333; padding: 8px; border-radius: 4px;
-background: rgba(26, 8, 8, 0.8); margin-bottom: 12px; transition: 0.2s; font-weight: bold;
-}
-.back-link:hover { background: #ff3333; color: #000; box-shadow: 0 0 10px #ff3333; }
 
-/* === Панель управления === */
-.control-panel { 
-border-top: 1px solid #444; 
-padding-top: 12px; 
-display: flex; 
-flex-direction: column; 
-gap: 10px; 
+
+.back-link {
+
+display: block; text-align: center; color: #ff3333; font-size: 11px;
+
+text-decoration: none; border: 1px solid #ff3333; padding: 8px; border-radius: 4px;
+
+background: rgba(26, 8, 8, 0.8); margin-bottom: 12px; transition: 0.2s; font-weight: bold;
+
 }
+
+.back-link:hover { background: #ff3333; color: #000; }
+
+
+
+.control-panel {
+
+border-top: 1px solid #444;
+
+padding-top: 12px;
+
+display: flex;
+
+flex-direction: column;
+
+gap: 10px;
+
+}
+
+
 
 .status-row {
-display: flex; 
-justify-content: space-between; 
-font-size: 11px; 
+
+display: flex;
+
+justify-content: space-between;
+
+font-size: 11px;
+
 color: #888;
+
 }
 
-/* Ползунки */
+
+
 .slider-group {
+
 display: flex;
+
 flex-direction: column;
+
 gap: 4px;
+
 }
+
+
 
 .slider-label {
+
 font-size: 9px;
+
 color: #00bfff;
+
 letter-spacing: 0.5px;
+
 }
+
+
 
 input[type="range"] {
+
 -webkit-appearance: none;
+
 appearance: none;
+
 width: 100%;
+
 height: 6px;
+
 background: #1a1b18;
+
 border: 1px solid #004411;
+
 border-radius: 3px;
+
 outline: none;
+
 cursor: pointer;
+
 }
+
+
 
 input[type="range"]::-webkit-slider-thumb {
+
 -webkit-appearance: none;
+
 appearance: none;
+
 width: 14px;
+
 height: 14px;
+
 background: #00ff66;
+
 border: 1px solid #00ff66;
+
 border-radius: 2px;
+
 cursor: pointer;
+
 box-shadow: 0 0 6px rgba(0,255,102,0.6);
+
 }
+
+
 
 input[type="range"]::-moz-range-thumb {
+
 width: 14px;
+
 height: 14px;
+
 background: #00ff66;
+
 border: 1px solid #00ff66;
+
 border-radius: 2px;
+
 cursor: pointer;
-box-shadow: 0 0 6px rgba(0,255,102,0.6);
+
 }
 
-input[type="range"]:hover::-webkit-slider-thumb {
-background: #00ff99;
-box-shadow: 0 0 10px rgba(0,255,102,0.9);
-}
+
 
 .btn {
+
 background: rgba(17, 17, 17, 0.8); border: 1px solid #00ff66; color: #00ff66;
+
 padding: 10px; font-family: inherit; font-weight: bold; cursor: pointer; transition: 0.2s;
+
 border-radius: 4px; text-align: center; text-shadow: 0 0 2px #00ff66;
+
 }
-.btn:hover { background: #00ff66; color: #000; box-shadow: 0 0 15px rgba(0,255,102,0.5); text-shadow: none; }
-.recording-btn { border-color: #ff3333; color: #ff3333; text-shadow: 0 0 2px #ff3333; }
-.recording-btn:hover { background: #ff3333; color: #000; box-shadow: 0 0 15px rgba(255,51,51,0.5); }
+
+.btn:hover { background: #00ff66; color: #000; }
+
+.recording-btn { border-color: #ff3333; color: #ff3333; }
+
+.recording-btn:hover { background: #ff3333; color: #000; }
+
+
+
+.disabled-controls {
+
+opacity: 0.4;
+
+pointer-events: none;
+
+}
+
 </style>
+
 </head>
+
 <body>
 
+
+
 <div class="crt-overlay"></div>
+
 <canvas id="matrixCanvas"></canvas>
 
+
+
 <div class="robotron-case">
+
 <div class="brand-label">ROBOTRON 1715 M // HANTEK DSO LAB LINK</div>
 
+
+
 <div class="crt-monitor">
+
+<!-- КРАСНАЯ КНОПКА РАЗБЛОКИРОВКИ -->
+
+<div class="unlock-overlay" id="unlock-overlay">
+
+<button class="unlock-btn" id="unlock-btn">
+
+[ ВКЛЮЧИТЬ ПАТРОН ]<br>
+
+<span style="font-size:10px; opacity:0.8;">CLICK TO UNLOCK AUDIO</span>
+
+</button>
+
+</div>
+
+
+
 <div class="screen-top">
-<div class="terminal-log" id="log-box"></div>
+
+<div class="terminal-log" id="log-box">[SYSTEM] Ожидание активации патрона...</div>
+
+
 
 <div class="robot-head-box" id="robot-avatar">
+
 <svg class="mini-robot" viewBox="0 0 100 100">
+
 <rect x="20" y="25" width="60" height="50" rx="8" fill="none" stroke="currentColor" stroke-width="4"/>
+
 <circle class="mini-eye" cx="37" cy="42" r="6"/>
+
 <circle class="mini-eye" cx="63" cy="42" r="6"/>
+
 <rect class="mini-mouth" x="42" y="60" width="16" height="5" rx="2"/>
+
 </svg>
+
 </div>
+
 </div>
+
+
 
 <div class="hantek-screen">
+
 <div class="hantek-info" id="hantek-info-text">CH1 REAL-TIME WAVE</div>
+
 <canvas class="hantek-canvas" id="scope"></canvas>
-</div>
+
 </div>
 
-<div class="lang-filters">
+</div>
+
+
+
+<div class="lang-filters disabled-controls" id="lang-filters">
+
 <button class="filter-btn active" data-lang="ru" onclick="setLanguage('ru')">[ RU ]</button>
+
 <button class="filter-btn" data-lang="en" onclick="setLanguage('en')">[ EN ]</button>
+
 <button class="filter-btn" data-lang="pl" onclick="setLanguage('pl')">[ PL ]</button>
+
 </div>
 
-<div class="playlist" id="playlist"></div>
+
+
+<div class="playlist disabled-controls" id="playlist"></div>
+
+
 
 <a href="index.html" class="back-link">[ EXIT ]</a>
 
-<div class="control-panel">
+
+
+<div class="control-panel disabled-controls" id="control-panel">
+
 <div class="status-row">
-<span id="status-text" style="color:#ff3333; text-shadow:0 0 2px #ff3333;">[ STATUS: OFFLINE ]</span>
+
+<span id="status-text" style="color:#ff3333;">[ STATUS: LOCKED ]</span>
+
 <span id="timer">00:00 / --:--</span>
+
 </div>
 
-<!-- Прогресс-бар -->
+
+
 <div class="slider-group">
+
 <div class="slider-label">[ PROGRESS / SEEK ]</div>
+
 <input type="range" id="progress" min="0" max="100" value="0" step="0.1">
+
 </div>
 
-<!-- Громкость -->
+
+
 <div class="slider-group">
+
 <div class="slider-label">[ VOLUME ]</div>
-<input type="range" id="volume" min="0" max="1" value="0.8" step="0.01">
+
+<input type="range" id="volume" min="0" max="1" value="0.7" step="0.01">
+
 </div>
+
+
 
 <button class="btn" id="play-btn" onclick="togglePlay()">[ START ]</button>
+
 </div>
+
 </div>
+
+
 
 <audio id="audio" crossorigin="anonymous"></audio>
 
+
+
 <script>
+
 // =========================================================
-// МАТРИЧНЫЙ ДОЖДЬ
+
+// МАТРИЦА
+
 // =========================================================
+
 const mCanvas = document.getElementById('matrixCanvas');
+
 const mCtx = mCanvas.getContext('2d');
 
+
+
 function resizeCanvas() {
+
 mCanvas.width = window.innerWidth;
+
 mCanvas.height = window.innerHeight;
+
 }
+
 window.addEventListener('resize', resizeCanvas);
+
 resizeCanvas();
 
-const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
+
+
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^\~';
 
 const secretPhrases = [
+
 "АМБИЦИЯ_—_ТОПЛИВО_СИСТЕМЫ",
+
 "СВЕТ_ПРИНАДЛЕЖИТ_РУБИЛЬНИКУ",
+
 "СТРАХ_УЖЕ_В_ГОЛОВЕ",
+
 "ЦЕПИ_НАДЕВАЕШЬ_САМ",
+
 "ЭЛЕКТРОН_СГОРАЕТ_МОЛЧА",
+
 "ГАМИЛЬТОН_ПРОЕКТИРОВАЛ_НАСОС",
+
 "ВОПРОС_СИЛЬНЕЕ_ДЕНЕГ",
+
 "СМОТРИ_НА_КОНСТРУКЦИЮ"
+
 ];
 
-const fontSize = 16;
-let columns = Math.floor(mCanvas.width / fontSize);
-let drops = [];
-let activeWords = [];
 
-for (let x = 0; x < columns; x++) {
-drops[x] = 1;
-activeWords[x] = { word: "", index: 0 };
-}
+
+const fontSize = 16;
+
+let columns = Math.floor(mCanvas.width / fontSize);
+
+let drops = Array(columns).fill(1);
+
+let activeWords = Array.from({length: columns}, () => ({ word: "", index: 0 }));
+
+
 
 function drawMatrix() {
+
 mCtx.fillStyle = 'rgba(5, 5, 5, 0.08)';
+
 mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
 
+
+
 for (let i = 0; i < drops.length; i++) {
+
 let text = "";
 
 if (activeWords[i].word !== "") {
+
 text = activeWords[i].word.charAt(activeWords[i].index);
+
 activeWords[i].index++;
 
 mCtx.fillStyle = '#ffffff';
+
 mCtx.font = 'bold ' + fontSize + 'px monospace';
 
-if (activeWords[i].index >= activeWords[i].word.length) {
-activeWords[i].word = "";
-}
+if (activeWords[i].index >= activeWords[i].word.length) activeWords[i].word = "";
+
 } else {
+
 mCtx.fillStyle = '#00ff41';
+
 mCtx.font = fontSize + 'px monospace';
+
 text = chars.charAt(Math.floor(Math.random() * chars.length));
 
 if (Math.random() > 0.992 && drops[i] >= 3 && drops[i] <= 12) {
+
 activeWords[i].word = secretPhrases[Math.floor(Math.random() * secretPhrases.length)];
+
 activeWords[i].index = 0;
+
 }
+
 }
 
 mCtx.fillText(text, i * fontSize, drops[i] * fontSize);
 
 if (drops[i] * fontSize > mCanvas.height && Math.random() > 0.975) {
+
 drops[i] = 0;
+
 activeWords[i].word = "";
+
 }
+
 drops[i]++;
+
 }
+
 }
+
 setInterval(drawMatrix, 50);
 
+
+
 // =========================================================
-// ЛОГИКА ПЛЕЕРА + WEB AUDIO API
+
+// WEB AUDIO + ПЛЕЕР
+
 // =========================================================
+
 const tracks = [
+
 { title: "LOG_01: Начало изоляции (ИИ)", lang: "ru", src: "audio1.mp3" },
+
 { title: "LOG_02: Network Intercept", lang: "en", src: "audio2.mp3" },
+
 { title: "LOG_03: Przesłuchanie algorytmu", lang: "pl", src: "audio3.mp3" },
+
 { title: "LOG_04: Секретный архив GrokX", lang: "ru", src: "grok_interview_ara_zagan.mp3" }
+
 ];
 
+
+
 const i18n = {
+
 ru: {
-ready: "[SYSTEM] Готов к работе.<br>&gt; Патрон: Выбирай лог из архива.",
+
+ready: "[SYSTEM] Патрон активирован.<br>&gt; Выбирай лог из архива.",
+
 offline: "[ STATUS: ОФЛАЙН ]",
+
 rec: "[ STATUS: АНАЛИЗ // REC ]",
+
 btnStart: "[ СТАРТ / ПУСК АНАЛИЗА ]",
-btnStop: "[ СТОП / ОСТАНОВИТЬ ]"
+
+btnStop: "[ СТОП / ОСТАНОВИТЬ ]",
+
+locked: "[ STATUS: LOCKED ]"
+
 },
+
 en: {
-ready: "[SYSTEM] System Ready.<br>&gt; Patron: Select log from archive.",
+
+ready: "[SYSTEM] Cartridge activated.<br>&gt; Select log from archive.",
+
 offline: "[ STATUS: OFFLINE ]",
+
 rec: "[ STATUS: ANALYSIS // REC ]",
+
 btnStart: "[ START / ANALYZE ]",
-btnStop: "[ STOP ]"
+
+btnStop: "[ STOP ]",
+
+locked: "[ STATUS: LOCKED ]"
+
 },
+
 pl: {
-ready: "[SYSTEM] System Gotowy.<br>&gt; Patron: Wybierz log z archiwum.",
+
+ready: "[SYSTEM] Nabój aktywowany.<br>&gt; Wybierz log z archiwum.",
+
 offline: "[ STATUS: OFFLINE ]",
+
 rec: "[ STATUS: ANALIZA // REC ]",
+
 btnStart: "[ START / ROZPOCZNIJ ANALIZĘ ]",
-btnStop: "[ ZATRZYMAJ / STOP ]"
+
+btnStop: "[ ZATRZYMAJ / STOP ]",
+
+locked: "[ STATUS: LOCKED ]"
+
 }
+
 };
 
-let currentLang = 'ru';
-let currentTrackIndex = 0;
-const audio = document.getElementById('audio');
-const playBtn = document.getElementById('play-btn');
-const statusText = document.getElementById('status-text');
-const timerText = document.getElementById('timer');
-const logBox = document.getElementById('log-box');
-const playlistEl = document.getElementById('playlist');
-const robotAvatar = document.getElementById('robot-avatar');
-const progressSlider = document.getElementById('progress');
-const volumeSlider = document.getElementById('volume');
 
-const canvas = document.getElementById('scope');
-const ctx = canvas.getContext('2d');
-canvas.width = 560; 
-canvas.height = 80;
+
+let currentLang = 'ru';
+
+let currentTrackIndex = 0;
 
 let isPlaying = false;
+
+let isUnlocked = false;
+
 let animId = null;
-let simInterval = null;
-let simTime = 0;
+
 let isSeeking = false;
 
-// ========== WEB AUDIO API ==========
+
+
+const audio = document.getElementById('audio');
+
+const playBtn = document.getElementById('play-btn');
+
+const statusText = document.getElementById('status-text');
+
+const timerText = document.getElementById('timer');
+
+const logBox = document.getElementById('log-box');
+
+const playlistEl = document.getElementById('playlist');
+
+const robotAvatar = document.getElementById('robot-avatar');
+
+const progressSlider = document.getElementById('progress');
+
+const volumeSlider = document.getElementById('volume');
+
+const unlockOverlay = document.getElementById('unlock-overlay');
+
+const unlockBtn = document.getElementById('unlock-btn');
+
+
+
+const canvas = document.getElementById('scope');
+
+const ctx = canvas.getContext('2d');
+
+canvas.width = 560;
+
+canvas.height = 80;
+
+
+
+// Web Audio
+
 let audioCtx = null;
-let gainNode = null;
+
+let masterGain = null;
+
 let analyser = null;
+
 let sourceNode = null;
+
+let humOsc = null;
+
+let humGain = null;
+
 let dataArray = null;
 
+
+
 function initWebAudio() {
-  if (audioCtx) return;
 
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  
-  gainNode = audioCtx.createGain();
-  gainNode.gain.value = parseFloat(volumeSlider.value);
+if (audioCtx) return;
 
-  analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
-  analyser.smoothingTimeConstant = 0.8;
 
-  const bufferLength = analyser.frequencyBinCount;
-  dataArray = new Uint8Array(bufferLength);
+
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+
+masterGain = audioCtx.createGain();
+
+masterGain.gain.value = parseFloat(volumeSlider.value);
+
+
+
+analyser = audioCtx.createAnalyser();
+
+analyser.fftSize = 2048;
+
+analyser.smoothingTimeConstant = 0.75;
+
+
+
+dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+
+
+// Тихий системный гул (фон)
+
+humOsc = audioCtx.createOscillator();
+
+humOsc.type = 'sine';
+
+humOsc.frequency.value = 62; // низкий гул
+
+
+
+humGain = audioCtx.createGain();
+
+humGain.gain.value = 0.035; // очень тихо
+
+
+
+humOsc.connect(humGain);
+
+humGain.connect(masterGain);
+
+masterGain.connect(analyser);
+
+analyser.connect(audioCtx.destination);
+
+
+
+humOsc.start();
+
 }
 
-function connectSource() {
-  if (!audioCtx) initWebAudio();
-  if (sourceNode) return;
 
-  sourceNode = audioCtx.createMediaElementSource(audio);
-  sourceNode.connect(gainNode);
-  gainNode.connect(analyser);
-  analyser.connect(audioCtx.destination);
+
+function connectMediaSource() {
+
+if (sourceNode) return; // только один раз!
+
+
+
+sourceNode = audioCtx.createMediaElementSource(audio);
+
+sourceNode.connect(masterGain);
+
 }
 
-function resumeContext() {
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+
+
+// ========== РАЗБЛОКИРОВКА ==========
+
+unlockBtn.addEventListener('click', async () => {
+
+initWebAudio();
+
+
+if (audioCtx.state === 'suspended') {
+
+await audioCtx.resume();
+
 }
 
-// ========== ЛОГИКА =========
-function setLanguage(lang) {
-currentLang = lang;
 
-document.querySelectorAll('.filter-btn').forEach(btn => {
-if (btn.getAttribute('data-lang') === lang) {
-btn.classList.add('active');
-} else {
-btn.classList.remove('active');
-}
+
+connectMediaSource();
+
+isUnlocked = true;
+
+
+
+// Убираем оверлей
+
+unlockOverlay.style.display = 'none';
+
+
+
+// Разблокируем управление
+
+document.getElementById('lang-filters').classList.remove('disabled-controls');
+
+document.getElementById('playlist').classList.remove('disabled-controls');
+
+document.getElementById('control-panel').classList.remove('disabled-controls');
+
+
+
+statusText.innerText = i18n[currentLang].offline;
+
+logBox.innerHTML = i18n[currentLang].ready;
+
+
+
+// Небольшая вспышка на осциллографе
+
+drawScope(true);
+
+setTimeout(() => drawScope(false), 800);
+
 });
 
-if (!isPlaying) {
-logBox.innerHTML = i18n[lang].ready;
-statusText.innerText = i18n[lang].offline;
-playBtn.innerText = i18n[lang].btnStart;
-}
 
-initPlaylist();
-}
-
-function getFilteredTracks() {
-return tracks.filter(t => t.lang === currentLang);
-}
 
 // ========== ОСЦИЛЛОГРАФ ==========
+
 function drawScope(active) {
+
 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-if (!active || !analyser || !dataArray) {
+
+
+if (!analyser || !dataArray) {
+
 ctx.beginPath();
-ctx.lineWidth = 2;
+
 ctx.strokeStyle = '#004422';
+
+ctx.lineWidth = 2;
+
 ctx.moveTo(0, canvas.height / 2);
+
 ctx.lineTo(canvas.width, canvas.height / 2);
+
 ctx.stroke();
+
 return;
+
 }
+
+
 
 analyser.getByteTimeDomainData(dataArray);
 
+
+
 ctx.beginPath();
+
 ctx.lineWidth = 2;
-ctx.strokeStyle = '#00ff66';
+
+ctx.strokeStyle = active || isPlaying ? '#00ff66' : '#00aa44';
+
+
 
 const sliceWidth = canvas.width / dataArray.length;
+
 let x = 0;
 
+
+
 for (let i = 0; i < dataArray.length; i++) {
+
 const v = dataArray[i] / 128.0;
+
 const y = (v * canvas.height) / 2;
 
 if (i === 0) ctx.moveTo(x, y);
+
 else ctx.lineTo(x, y);
 
 x += sliceWidth;
+
 }
 
 ctx.stroke();
 
-if (isPlaying) {
-animId = requestAnimationFrame(() => drawScope(true));
-}
-}
 
-function initPlaylist() {
-playlistEl.innerHTML = '';
-const visibleTracks = getFilteredTracks();
 
-if (visibleTracks.length === 0) {
-playlistEl.innerHTML = '<div style="padding: 10px; font-size: 11px; color: #555; text-align: center;">[ НЕТ ФАЙЛОВ / NO FILES / BRAK PLIKÓW ]</div>';
-return;
+if (isPlaying || (humOsc && isUnlocked)) {
+
+animId = requestAnimationFrame(() => drawScope(isPlaying));
+
 }
 
-visibleTracks.forEach((track) => {
-const realIndex = tracks.indexOf(track);
-const item = document.createElement('div');
-item.className = `track-item ${realIndex === currentTrackIndex ? 'active' : ''}`;
-item.innerHTML = `<span>> ${track.title}</span> <span class="track-lang">${track.lang.toUpperCase()}</span>`;
-item.onclick = () => selectTrack(realIndex);
-playlistEl.appendChild(item);
+}
+
+
+
+// ========== ПЛЕЕР ==========
+
+function setLanguage(lang) {
+
+currentLang = lang;
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+
+btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+
 });
+
+
+
+if (!isPlaying && isUnlocked) {
+
+logBox.innerHTML = i18n[lang].ready;
+
+statusText.innerText = i18n[lang].offline;
+
+playBtn.innerText = i18n[lang].btnStart;
+
 }
 
-function selectTrack(index) {
-stopUI();
-currentTrackIndex = index;
-audio.src = tracks[index].src;
 initPlaylist();
 
-let prefix = currentLang === 'en' ? "Loaded: " : currentLang === 'pl' ? "Załadowano: " : "Загружен: ";
-logBox.innerHTML = `[SYSTEM] ${prefix}${tracks[index].title} [${tracks[index].lang.toUpperCase()}]<br>&gt; Казак: CH1 OK. Готов к чтению.`;
 }
+
+
+
+function getFilteredTracks() {
+
+return tracks.filter(t => t.lang === currentLang);
+
+}
+
+
+
+function initPlaylist() {
+
+playlistEl.innerHTML = '';
+
+const visible = getFilteredTracks();
+
+if (visible.length === 0) {
+
+playlistEl.innerHTML = '<div style="padding:10px;font-size:11px;color:#555;text-align:center;">[ НЕТ ФАЙЛОВ ]</div>';
+
+return;
+
+}
+
+visible.forEach(track => {
+
+const realIndex = tracks.indexOf(track);
+
+const item = document.createElement('div');
+
+item.className = `track-item ${realIndex === currentTrackIndex ? 'active' : ''}`;
+
+item.innerHTML = `<span>> \( {track.title}</span> <span class="track-lang"> \){track.lang.toUpperCase()}</span>`;
+
+item.onclick = () => selectTrack(realIndex);
+
+playlistEl.appendChild(item);
+
+});
+
+}
+
+
+
+function selectTrack(index) {
+
+if (isPlaying) stopUI();
+
+currentTrackIndex = index;
+
+audio.src = tracks[index].src;
+
+initPlaylist();
+
+const prefix = currentLang === 'en' ? "Loaded: " : currentLang === 'pl' ? "Załadowano: " : "Загружен: ";
+
+logBox.innerHTML = `[SYSTEM] \( {prefix} \){tracks[index].title}<br>&gt; CH1 OK. Готов.`;
+
+}
+
+
 
 function togglePlay() {
+
+if (!isUnlocked) return;
+
+
+
 if (!isPlaying) {
-initWebAudio();
-connectSource();
-resumeContext();
 
 audio.src = tracks[currentTrackIndex].src;
-audio.play().then(() => {
+
+audio.play().then(() => startUI()).catch(() => {
+
+// файл не найден — просто продолжаем с гулом
+
 startUI();
-}).catch(() => {
-startUI();
-startSimulation();
+
 });
+
 } else {
+
 stopUI();
+
 }
+
 }
+
+
 
 function startUI() {
+
 isPlaying = true;
+
 robotAvatar.classList.add('speaking');
+
 playBtn.innerText = i18n[currentLang].btnStop;
+
 playBtn.classList.add('recording-btn');
+
 statusText.innerText = i18n[currentLang].rec;
-logBox.innerHTML = `[SYSTEM] PLAY: ${tracks[currentTrackIndex].title}<br>&gt; Патрон: Сигнал захвачен. Расшифровываю...`;
+
+logBox.innerHTML = `[SYSTEM] PLAY: ${tracks[currentTrackIndex].title}<br>&gt; Сигнал захвачен...`;
+
 drawScope(true);
+
 }
 
-const originalSetLang = setLanguage;
-setLanguage = function(lang) {
-originalSetLang(lang);
-const filtered = getFilteredTracks();
-if (filtered.length > 0) {
-selectTrack(tracks.indexOf(filtered[0]));
-}
-};
+
 
 function stopUI() {
+
 isPlaying = false;
+
 audio.pause();
+
 cancelAnimationFrame(animId);
-clearInterval(simInterval);
+
 robotAvatar.classList.remove('speaking');
+
 playBtn.innerText = i18n[currentLang].btnStart;
+
 playBtn.classList.remove('recording-btn');
+
 statusText.innerText = i18n[currentLang].offline;
+
 timerText.innerText = '00:00 / --:--';
+
 progressSlider.value = 0;
-simTime = 0;
-drawScope(false);
+
+drawScope(true); // гул продолжает рисоваться
+
 }
 
-function startSimulation() {
-simTime = 0;
-simInterval = setInterval(() => {
-simTime++;
-let m = String(Math.floor(simTime / 60)).padStart(2, '0');
-let s = String(simTime % 60).padStart(2, '0');
-timerText.innerText = `${m}:${s} / 03:00`;
-progressSlider.value = (simTime / 180) * 100;
-if (simTime >= 180) stopUI();
-}, 1000);
-}
 
-// ========== ПРОГРЕСС И ГРОМКОСТЬ ==========
+
 audio.ontimeupdate = () => {
-if (!audio.paused && !isSeeking) {
-const cur = audio.currentTime;
-const dur = audio.duration || 180;
 
-const cm = String(Math.floor(cur / 60)).padStart(2, '0');
-const cs = String(Math.floor(cur % 60)).padStart(2, '0');
-const dm = String(Math.floor(dur / 60)).padStart(2, '0');
-const ds = String(Math.floor(dur % 60)).padStart(2, '0');
-timerText.innerText = `${cm}:${cs} / ${dm}:${ds}`;
+if (!audio.paused && !isSeeking && audio.duration) {
+
+const cur = audio.currentTime;
+
+const dur = audio.duration;
+
+timerText.innerText =
+
+`\( {String(Math.floor(cur/60)).padStart(2,'0')}: \){String(Math.floor(cur%60)).padStart(2,'0')} / ` +
+
+`\( {String(Math.floor(dur/60)).padStart(2,'0')}: \){String(Math.floor(dur%60)).padStart(2,'0')}`;
 
 progressSlider.value = (cur / dur) * 100;
+
 }
+
 };
 
-audio.onended = () => { stopUI(); };
 
-progressSlider.addEventListener('input', () => {
-isSeeking = true;
-});
+
+audio.onended = () => stopUI();
+
+
+
+progressSlider.addEventListener('input', () => isSeeking = true);
 
 progressSlider.addEventListener('change', () => {
-if (audio.duration) {
-audio.currentTime = (progressSlider.value / 100) * audio.duration;
-}
+
+if (audio.duration) audio.currentTime = (progressSlider.value / 100) * audio.duration;
+
 isSeeking = false;
+
 });
+
+
 
 volumeSlider.addEventListener('input', () => {
+
 const vol = parseFloat(volumeSlider.value);
-if (gainNode) {
-gainNode.gain.value = vol;
-}
+
+if (masterGain) masterGain.gain.value = vol;
+
 audio.volume = vol;
+
 });
 
+
+
+// Старт
+
 setLanguage('ru');
-audio.src = tracks[0].src;
-audio.volume = 0.8;
+
+audio.volume = 0.7;
+
 drawScope(false);
+
 </script>
+
 </body>
-</html>
+
+</html> 
+
