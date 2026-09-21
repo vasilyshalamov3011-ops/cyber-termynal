@@ -34,7 +34,7 @@
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 1;
-            opacity: 0.15; /* Едва заметный */
+            opacity: 0.4; /* Усилил видимость дождя */
             pointer-events: none;
         }
 
@@ -107,9 +107,9 @@
     <div class="crt-overlay"></div>
     <canvas id="matrixCanvas"></canvas>
     
-    <!-- Фоновый звук в формате MP3 -->
+    <!-- ФОНОВАЯ ЛИФТОВАЯ МУЗЫКА (BOSSA NOVA / ELEVATOR) -->
     <audio id="bg-audio" loop preload="auto">
-        <source src="server_noise.mp3" type="audio/mpeg">
+        <source src="https://github.com/tholman/elevator.js/blob/master/demo/music/elevator.mp3?raw=true" type="audio/mpeg">
     </audio>
     
     <div id="exit-btn" onclick="window.location.href='index.html'">
@@ -129,7 +129,7 @@
         const inputContainer = document.getElementById("input-container");
         const userInput = document.getElementById("userInput");
         const bgAudio = document.getElementById("bg-audio");
-        bgAudio.volume = 0.3; // Громкость фона (от 0.0 до 1.0)
+        bgAudio.volume = 0.4; // Немного увеличил громкость музыки для эффекта
 
         // =========================================================
         // МАТРИЧНЫЙ ДОЖДЬ
@@ -208,10 +208,13 @@
         }
 
         // =========================================================
-        // РАДАР ВХОДЯЩИХ (POLLING)
+        // РАДАР ВХОДЯЩИХ И ПЕРЕМЕННЫЕ
         // =========================================================
         let lastUpdateId = 0;
         let isPolling = false;
+        
+        let currentStep = "alias"; 
+        let userAlias = "Unknown"; 
 
         async function initRadar() {
             const _domain = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==");
@@ -260,7 +263,7 @@
         }
 
         // =========================================================
-        // ЗАПУСК И ОТПРАВКА
+        // ЗАПУСК С РАСПИСАНИЕМ И ЗАПРОСОМ ИМЕНИ
         // =========================================================
         async function bootSequence() {
             await typeText("==============================================", 10);
@@ -270,11 +273,20 @@
             await typeText("==============================================", 10);
             await typeText(" ", 10);
             
+            await typeText("[!] Aktywny czas odpowiedzi: 10:00 - 15:00 (Gdańsk)", 20);
+            await typeText("[!] Время прямого ответа: 10:00 - 15:00 (Гданьск)", 20);
+            await typeText("[!] Poza godzinami: offline / Вне графика: офлайн", 20);
+            await typeText(" ", 10);
+            
+            await typeText("[*] Cyfrowy konfesjonał. Anonimowy czat bez twarzy.", 25);
+            await typeText("[*] Цифровая исповедальня. Анонимный чат без лиц.", 25);
+            await typeText("[*] Wyrzuć to z siebie. / Выложи душу.", 30);
+            await typeText(" ", 10);
+            
             await typeText("[*] Inicjalizacja radaru... / Запуск сканера сети...", 15);
             await initRadar(); 
             
-            await typeText("Oczekiwanie na wprowadzenie danych...", 20);
-            await typeText("Ожидание ввода сообщения...", 20);
+            await typeText("Podaj swój kryptonim / Введи свой позывной:", 20);
             
             inputContainer.classList.remove("hidden");
             userInput.focus();
@@ -296,6 +308,19 @@
                     setTimeout(() => { window.location.href = "index.html"; }, 1000);
                     return; 
                 }
+
+                if (currentStep === "alias") {
+                    userAlias = text; 
+                    currentStep = "message"; 
+                    
+                    await typeText(`[ZAAKCEPTOWANO / ПРИНЯТО] Witam, ${userAlias}.`, 20);
+                    await typeText("Oczekiwanie na wprowadzenie danych...", 20);
+                    await typeText("Ожидание ввода сообщения...", 20);
+                    
+                    inputContainer.classList.remove("hidden");
+                    userInput.focus();
+                    return; 
+                }
                 
                 await typeText("[***] Szyfrowanie i transmisja pakietu...", 30);
                 
@@ -309,14 +334,21 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             chat_id: _node_id,
-                            text: `📟 **ENIGMA UPLINK**\n_${text}_`,
+                            text: `📟 **ENIGMA UPLINK**\n👤 От: *${userAlias}*\n\n_${text}_`,
                             parse_mode: "Markdown"
                         })
                     });
                 } catch (error) {}
 
+                // ЗАЩИТА ОТ СПАМА (КУЛДАУН 5 СЕКУНД)
                 setTimeout(async () => {
                     await typeText(">>> PAKIET DOSTARCZONY / ПАКЕТ ДОСТАВЛЕН", 20);
+                    await typeText("[!] Chłodzenie nadajnika. / Охлаждение передатчика...", 20);
+                    await typeText("[!] Proszę czekać 5 sekund / Ожидайте 5 сек...", 20);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    
+                    await typeText("[*] Nadajnik gotowy / Передатчик остыл. Канал свободен.", 20);
                     inputContainer.classList.remove("hidden");
                     userInput.focus();
                 }, 1500);
@@ -329,7 +361,6 @@
             }
         });
 
-        // Запуск аудио и скриптов после первого клика (требование браузеров)
         window.onload = () => {
             document.body.addEventListener('click', function initInteractions() {
                 if (audioCtx.state === 'suspended') audioCtx.resume();
