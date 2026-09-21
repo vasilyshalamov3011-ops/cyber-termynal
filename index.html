@@ -1571,7 +1571,7 @@ if (clearScreen) playView(menuText);
 else appendText(menuText);
 }
 
-const COMMANDS = ["home","story","story2","story3","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal","patron","music","uplink","связь"];
+const COMMANDS = ["home","story","story2","story3","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal","patron","music","uplink","связь","robotron"];
 
 inputField.addEventListener("keydown", function(e) {
 if (e.key === "Enter") {
@@ -1622,6 +1622,13 @@ case "story3":
     printDroid("Жесткий код. Я бы так не смог. // Twardy kod.", "scanning", true, false);
     });
     break;
+    case "robotron":
+        playView("\n[***] Inicjalizacja modułu audio... \n[***] Загрузка архива Robotron...\n", () => {
+            setTimeout(() => {
+                window.location.href = "robotron.html";
+            }, 1500);
+        });
+        break;
 case "notes": playView(IMMIGRANT_NOTES); break;
 case "projects": showProjects(); break;
 case "life": showLifeArchive(); break;
