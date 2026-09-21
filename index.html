@@ -1549,7 +1549,7 @@ const menuText = `
 story        - читать историю 1 // czytaj historię 1
 story2       - читать историю 2 // czytaj historię 2
 story3       - читать историю 3 // czytaj historię 3
-interrogate  - допрос алгоритма // przesłuchanie algorytmu
+robotron     - допрос алгоритма // przesłuchanie algorytmu
 notes        - заметки // notatki
 projects     - проекты // projekty
 life         - личный архив // archiwum osobiste
@@ -1665,7 +1665,7 @@ case "files": showFiles(); break;
 case "search": if (!arg) { appendText("\nКоманда: search [слово]\n"); } else { searchArchive(arg); } break;
 case "open": if (!arg) { appendText("\nКоманда: open [ID]\n"); } else { openTarget(arg); } break;
 case "contact": showContact(); break;
-case "help": playView("\nКОМАНДЫ: home, story, story2, story3, notes, projects, life, files, search, open, scan, hack, contact, clear, patron [имя]\n"); break;
+case "help": playView("\nКОМАНДЫ: home, story, story2, story3, notes, projects, life, files, search, open, status, whoami, about, scan, hack, contact, clear, patron [имя], uplink, robotron\n"); break;
 case "clear": output.innerHTML = ""; appendText("", () => printDroid("Экран очищен. // Ekran wyczyszczony.", "idle", true, false)); break;
 case "status": playView("\nСИСТЕМА: СТАБИЛЬНА // SYSTEM: STABILNY\nУЗЕЛ: 539A\n"); break;
 case "whoami": playView(`\nПРОФИЛЬ:\n${USER_PROFILE.name}\n${USER_PROFILE.location}\n`); break;
