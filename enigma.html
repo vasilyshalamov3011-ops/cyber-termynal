@@ -11,12 +11,11 @@
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 0;
-            font-size: 18px;
+            font-size: 18px; /* Базовый размер для ПК */
             font-weight: bold;
             overflow-x: hidden;
         }
 
-        /* Эффект ЭЛТ-монитора */
         .crt-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -28,30 +27,36 @@
             box-shadow: inset 0 0 100px rgba(0,255,65,0.15);
         }
 
-        /* Матричный дождь (холст) */
         #matrixCanvas {
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 1;
-            opacity: 0.4; /* Усилил видимость дождя */
+            opacity: 0.4; 
             pointer-events: none;
         }
 
         .terminal-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 60px 20px 40px 20px; 
+            padding: 50px 15px 30px 15px; 
             min-height: 100vh;
             box-sizing: border-box;
             position: relative;
-            z-index: 10; /* Поверх дождя */
+            z-index: 10; 
+        }
+
+        .terminal-frame {
+            border: 2px solid #00ff41;
+            padding: 20px;
+            min-height: 70vh;
+            box-shadow: inset 0 0 15px rgba(0,255,65,0.05);
         }
 
         #exit-btn {
             position: absolute;
-            top: 15px;
-            right: 20px;
+            top: 10px;
+            right: 15px;
             cursor: pointer;
             border: 1px solid #00ff41;
             background: rgba(0, 255, 65, 0.1);
@@ -71,7 +76,8 @@
         #output p {
             margin: 5px 0;
             line-height: 1.4;
-            word-wrap: break-word;
+            white-space: pre-wrap; /* Грамотный перенос строк по словам */
+            word-wrap: break-word; /* Страховка для аномально длинных слов */
         }
 
         .input-line {
@@ -81,6 +87,7 @@
 
         .input-line span {
             margin-right: 10px;
+            white-space: pre;
         }
 
         input {
@@ -94,8 +101,12 @@
             width: 100%;
         }
 
-        input:focus {
-            outline: none;
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ */
+        @media (max-width: 600px) {
+            body { font-size: 14px; }
+            input { font-size: 14px; }
+            .terminal-container { padding: 40px 10px 20px 10px; }
+            .terminal-frame { padding: 12px; }
         }
 
         .hidden {
@@ -107,20 +118,21 @@
     <div class="crt-overlay"></div>
     <canvas id="matrixCanvas"></canvas>
     
-    <!-- ФОНОВАЯ ЛИФТОВАЯ МУЗЫКА (BOSSA NOVA / ELEVATOR) -->
     <audio id="bg-audio" loop preload="auto">
         <source src="https://github.com/tholman/elevator.js/blob/master/demo/music/elevator.mp3?raw=true" type="audio/mpeg">
     </audio>
     
     <div id="exit-btn" onclick="window.location.href='index.html'">
-        [X] ZAMKNIJ / ЗАКРЫТЬ (EXIT)
+        [X] ZAMKNIJ / ЗАКРЫТЬ
     </div>
 
     <div class="terminal-container">
-        <div id="output"></div>
-        <div id="input-container" class="input-line hidden">
-            <span>>_ </span>
-            <input type="text" id="userInput" autocomplete="off" autofocus>
+        <div class="terminal-frame">
+            <div id="output"></div>
+            <div id="input-container" class="input-line hidden">
+                <span>>_ </span>
+                <input type="text" id="userInput" autocomplete="off" autofocus>
+            </div>
         </div>
     </div>
 
@@ -129,7 +141,7 @@
         const inputContainer = document.getElementById("input-container");
         const userInput = document.getElementById("userInput");
         const bgAudio = document.getElementById("bg-audio");
-        bgAudio.volume = 0.4; // Немного увеличил громкость музыки для эффекта
+        bgAudio.volume = 0.05; 
 
         // =========================================================
         // МАТРИЧНЫЙ ДОЖДЬ
@@ -146,7 +158,7 @@
 
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
         const fontSize = 16;
-        const columns = Math.floor(canvas.width / fontSize);
+        let columns = Math.floor(canvas.width / fontSize);
         const drops = [];
         for (let x = 0; x < columns; x++) drops[x] = 1;
 
@@ -166,7 +178,7 @@
         setInterval(drawMatrix, 50);
 
         // =========================================================
-        // КЛЮЧИ (ЗАШИФРОВАННЫЕ)
+        // КЛЮЧИ И TELEGRAM ENDPOINT
         // =========================================================
         const _k1 = "ODg5NDc3ODk3NjpBQUhlU0kt";
         const _k2 = "YzlUX3VpZU5mS2Zzdy16emZs";
@@ -175,6 +187,9 @@
         
         const _sys_key = atob(_k1 + _k2 + _k3);
         const _node_id = atob(_target);
+        const _domain_part1 = "aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==";
+        const _domain_part2 = "L3NlbmRNZXNzYWdl";
+        const _endpoint = atob(_domain_part1) + _sys_key + atob(_domain_part2);
 
         // =========================================================
         // АУДИО И ПЕЧАТЬ
@@ -199,7 +214,8 @@
             outputDiv.appendChild(p);
             
             for (let i = 0; i < text.length; i++) {
-                p.innerHTML += text.charAt(i) === " " ? "&nbsp;" : text.charAt(i);
+                // Исключили innerHTML и неразрывные пробелы. Используем чистый textContent
+                p.textContent += text.charAt(i); 
                 if (text.charAt(i) !== " ") playKeystroke();
                 window.scrollTo(0, document.body.scrollHeight);
                 await new Promise(r => setTimeout(r, speed + Math.random() * 20));
@@ -208,7 +224,7 @@
         }
 
         // =========================================================
-        // РАДАР ВХОДЯЩИХ И ПЕРЕМЕННЫЕ
+        // РАДАР И ЛОГИКА
         // =========================================================
         let lastUpdateId = 0;
         let isPolling = false;
@@ -217,8 +233,7 @@
         let userAlias = "Unknown"; 
 
         async function initRadar() {
-            const _domain = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==");
-            const url = _domain + _sys_key + atob("L2dldFVwZGF0ZXM=");
+            const url = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==") + _sys_key + atob("L2dldFVwZGF0ZXM=");
             try {
                 const res = await fetch(url);
                 const data = await res.json();
@@ -232,18 +247,14 @@
 
         async function scanEther() {
             if (!isPolling) return;
-            
-            const _domain = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==");
-            const url = _domain + _sys_key + atob("L2dldFVwZGF0ZXM/b2Zmc2V0PQ==") + (lastUpdateId + 1);
+            const url = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==") + _sys_key + atob("L2dldFVwZGF0ZXM/b2Zmc2V0PQ==") + (lastUpdateId + 1);
             
             try {
                 const res = await fetch(url);
                 const data = await res.json();
-                
                 if (data.ok && data.result.length > 0) {
                     for (const update of data.result) {
                         lastUpdateId = update.update_id; 
-                        
                         if (update.message && update.message.text) {
                             if (update.message.text.startsWith('/')) continue;
                             
@@ -258,19 +269,16 @@
                     }
                 }
             } catch (e) {}
-            
             setTimeout(scanEther, 3000);
         }
 
-        // =========================================================
-        // ЗАПУСК С РАСПИСАНИЕМ И ЗАПРОСОМ ИМЕНИ
-        // =========================================================
         async function bootSequence() {
-            await typeText("==============================================", 10);
+            // Укоротил полосы для мобилок
+            await typeText("=======================================", 10);
             await typeText(" PROTOKÓŁ «ENIGMA-M» | KANAŁ OTWARTY", 20);
             await typeText(" ПРОТОКОЛ «ЭНИГМА-M» | КАНАЛ ОТКРЫТ", 20);
             await typeText(" SECURE UPLINK TO CREATOR / ЗАЩИЩЕННАЯ СВЯЗЬ", 20);
-            await typeText("==============================================", 10);
+            await typeText("=======================================", 10);
             await typeText(" ", 10);
             
             await typeText("[!] Aktywny czas odpowiedzi: 10:00 - 15:00 (Gdańsk)", 20);
@@ -313,10 +321,25 @@
                     userAlias = text; 
                     currentStep = "message"; 
                     
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    bgAudio.play().catch(e => console.log("Фоновое аудио заблокировано", e));
+                    
                     await typeText(`[ZAAKCEPTOWANO / ПРИНЯТО] Witam, ${userAlias}.`, 20);
                     await typeText("Oczekiwanie na wprowadzenie danych...", 20);
                     await typeText("Ожидание ввода сообщения...", 20);
                     
+                    try {
+                        fetch(_endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: _node_id,
+                                text: `🔌 **СИСТЕМА:** Пользователь *${userAlias}* подключился к каналу.`,
+                                parse_mode: "Markdown"
+                            })
+                        });
+                    } catch (error) {}
+
                     inputContainer.classList.remove("hidden");
                     userInput.focus();
                     return; 
@@ -324,12 +347,8 @@
                 
                 await typeText("[***] Szyfrowanie i transmisja pakietu...", 30);
                 
-                const _domain_part1 = "aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==";
-                const _domain_part2 = "L3NlbmRNZXNzYWdl";
-                const endpoint = atob(_domain_part1) + _sys_key + atob(_domain_part2);
-
                 try {
-                    fetch(endpoint, {
+                    fetch(_endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -340,7 +359,6 @@
                     });
                 } catch (error) {}
 
-                // ЗАЩИТА ОТ СПАМА (КУЛДАУН 5 СЕКУНД)
                 setTimeout(async () => {
                     await typeText(">>> PAKIET DOSTARCZONY / ПАКЕТ ДОСТАВЛЕН", 20);
                     await typeText("[!] Chłodzenie nadajnika. / Охлаждение передатчика...", 20);
@@ -362,12 +380,6 @@
         });
 
         window.onload = () => {
-            document.body.addEventListener('click', function initInteractions() {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                bgAudio.play().catch(e => console.log("Фоновое аудио заблокировано браузером до взаимодействия."));
-                document.body.removeEventListener('click', initInteractions);
-            }, { once: true });
-            
             setTimeout(bootSequence, 500);
         };
     </script>
