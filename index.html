@@ -1,16 +1,16 @@
 <!DOCTYPE html>  
-<html lang="ru">    
-<head>    
-<meta charset="UTF-8">    
-<meta name="viewport" content="width=device-width, initial-scale=1.0">    
-<title>Cyberdeck Archive // Vasilii Shalamov</title>    
-<style>    
+<html lang="ru">     
+<head>     
+<meta charset="UTF-8">     
+<meta name="viewport" content="width=device-width, initial-scale=1.0">     
+<title>Cyberdeck Archive // Vasilii Shalamov</title>     
+<style>     
 /* =========================================================    
-   GLOBAL    
-   ========================================================= */    
-* { box-sizing: border-box; }    
-html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }    
-body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shadow: 0 0 6px rgba(0,255,65,.35); }   
+   GLOBAL     
+   ========================================================= */     
+* { box-sizing: border-box; }     
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }     
+body { color: #00ff41; font-family: "Courier New", Courier, monospace; text-shadow: 0 0 6px rgba(0,255,65,.35); }    
 
 /* =========================================================  
 MATRIX & SCANLINES  
@@ -252,70 +252,132 @@ text-shadow: 0 0 5px #ff003c;
 }
 </style>
 
-</head>    
-<body>  
+</head>     
+<body>   
 
-<!-- BOOT SCREEN -->  
-<div id="boot-screen">    
-    <div class="boot-title">СИСТЕМА ЗАБЛОКИРОВАНА // SYSTEM ZABLOKOWANY</div>    
-    <div class="boot-subtitle">КИБЕРДЕКА АРХИВ // УЗЕЛ 539A</div>    
-    <div class="boot-version">ARCHIVE OS v9.4 // ODSTRZAŁ CORE</div>    
-    <div class="blink-text">&gt; НАЖМИТЕ ДЛЯ ЗАПУСКА // KLIKNIJ ABY URUCHOMIĆ &lt;</div>    
-</div>  
+<div id="boot-screen">     
+    <div class="boot-title">СИСТЕМА ЗАБЛОКИРОВАНА // SYSTEM ZABLOKOWANY</div>     
+    <div class="boot-subtitle">КИБЕРДЕКА АРХИВ // УЗЕЛ 539A</div>     
+    <div class="boot-version">ARCHIVE OS v9.4 // ODSTRZAŁ CORE</div>     
+    <div class="blink-text">&gt; НАЖМИТЕ ДЛЯ ЗАПУСКА // KLIKNIJ ABY URUCHOMIĆ &lt;</div>     
+</div>   
 
-<!-- MATRIX & GHOST -->  
-<canvas id="matrixCanvas"></canvas>  
-<div id="johnny-ghost"><img id="johnny-img" src="johnny1.png" alt="Johnny Ghost"></div>    
-<div class="scanlines"></div>  
+<canvas id="matrixCanvas"></canvas>   
+<div id="johnny-ghost"><img id="johnny-img" src="johnny1.png" alt="Johnny Ghost"></div>     
+<div class="scanlines"></div>   
 
-<!-- ФИНАЛЬНЫЙ ПОПАП С ОРУЩИМ ЧЕЛОВЕКОМ (ГИФКА) -->
 <div id="scream-popup">
     <img src="scream.gif" alt="System Intercept">
     <div class="glitch-text">[ AUDIO STREAM CORRUPTED // SHIFT + DELETE ]</div>
 </div>
 
-<!-- ФОНОВАЯ МУЗЫКА (ДИНАМИЧЕСКИЙ SRC) -->
 <audio id="bg-music" loop></audio>
 
-<!-- DUAL UI WRAPPER -->  
-<div id="ui-wrapper">    
-    <!-- Main Terminal -->    
-    <div class="cyber-container" id="main-terminal">    
-        <div id="output"></div>    
-        <div id="prompt-line">    
-            <span id="prompt-label">user@cyber-terminal:~$</span>    
-            <input id="input-field" type="text" spellcheck="false" autocomplete="off" autocapitalize="off">    
-        </div>    
-    </div>  
+<div id="ui-wrapper">     
+    <div class="cyber-container" id="main-terminal">     
+        <div id="output"></div>     
+        <div id="prompt-line">     
+            <span id="prompt-label">user@cyber-terminal:~$</span>     
+            <input id="input-field" type="text" spellcheck="false" autocomplete="off" autocapitalize="off">     
+        </div>     
+    </div>   
 
-    <!-- Side Log Terminal -->    
-    <div class="cyber-container" id="side-terminal">    
-        <div style="border-bottom: 1px solid #00ff41; margin-bottom: 10px; padding-bottom: 5px; flex-shrink: 0;">SYS.MONITOR // NODE 539A</div>    
-        <div id="sys-log-container">    
-            <div id="sys-output"></div>    
-        </div>    
+    <div class="cyber-container" id="side-terminal">     
+        <div style="border-bottom: 1px solid #00ff41; margin-bottom: 10px; padding-bottom: 5px; flex-shrink: 0;">SYS.MONITOR // NODE 539A</div>     
+        <div id="sys-log-container">     
+            <div id="sys-output"></div>     
+        </div>     
 
-        <div id="hardware-monitor">    
-            <div style="color: #ffa600; font-weight: bold; margin-bottom: 8px;">[ HARDWARE STATUS ]</div>    
-            <div>CPU LOAD : <span id="cpu-bar" class="hw-bar">[██████░░░░] 60%</span></div>    
-            <div>RAM ALLOC: <span id="ram-bar" class="hw-bar">[████░░░░░░] 40%</span></div>    
-            <div>NET UPLINK: <span class="blink-text" style="color: #00ff41;">SECURE // ENCRYPTED</span></div>    
-            <div>CORE TEMP: <span id="temp-val" class="hw-bar">42°C</span></div>    
+        <div id="hardware-monitor">     
+            <div style="color: #ffa600; font-weight: bold; margin-bottom: 8px;">[ HARDWARE STATUS ]</div>     
+            <div>CPU LOAD : <span id="cpu-bar" class="hw-bar">[██████░░░░] 60%</span></div>     
+            <div>RAM ALLOC: <span id="ram-bar" class="hw-bar">[████░░░░░░] 40%</span></div>     
+            <div>NET UPLINK: <span class="blink-text" style="color: #00ff41;">SECURE // ENCRYPTED</span></div>     
+            <div>CORE TEMP: <span id="temp-val" class="hw-bar">42°C</span></div>     
         </div>
-    </div>  
-</div>  
+    </div>   
+</div>   
 
-<script>    
+<script>     
 /* =========================================================    
-   DOM ELEMENTS    
-   ========================================================= */    
-const output = document.getElementById("output");    
-const sysOutput = document.getElementById("sys-output");    
-const inputField = document.getElementById("input-field");    
-const promptLine = document.getElementById("prompt-line");    
-const bootScreen = document.getElementById("boot-screen");    
+   DOM ELEMENTS     
+   ========================================================= */     
+const output = document.getElementById("output");     
+const sysOutput = document.getElementById("sys-output");     
+const inputField = document.getElementById("input-field");     
+const promptLine = document.getElementById("prompt-line");     
+const bootScreen = document.getElementById("boot-screen");     
 const mainTerminal = document.getElementById("main-terminal");
-const screamPopup = document.getElementById("scream-popup");    
+const screamPopup = document.getElementById("scream-popup");     
+
+/* =========================================================
+VOICE SYNTHESIS ENGINE (ГОЛОС ODSTRZAŁ // ТИХИЙ ПРОКУРЕННЫЙ МЕХАНИК)
+========================================================= */
+const VoiceSynth = {
+  synth: window.speechSynthesis,
+  voices: [],
+  enabled: localStorage.getItem('term_voice') !== 'false',
+
+  init() {
+    if (!('speechSynthesis' in window)) return;
+    const loadVoices = () => { this.voices = this.synth.getVoices(); };
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  },
+
+  cleanText(rawText) {
+    return rawText
+      .replace(/[*_#`~\[\]]/g, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .trim();
+  },
+
+  detectLang(text) {
+    const hasCyrillic = /[а-яё]/i.test(text);
+    const hasPolishOrLatin = /[a-z]/i.test(text) || /[ąćęłńóśźż]/i.test(text);
+
+    // Если латиница без кириллицы — железно польский
+    if (!hasCyrillic && hasPolishOrLatin) return 'pl-PL';
+    return 'ru-RU';
+  },
+
+  speak(rawText) {
+    if (!this.enabled || !('speechSynthesis' in window)) return;
+    const text = this.cleanText(rawText);
+    if (!text) return;
+
+    this.synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const lang = this.detectLang(text);
+    utterance.lang = lang;
+
+    // === ТЕМБР ПРОКУРЕННОГО КИБЕР-ДЕДА И КОМФОРТНАЯ ГРОМКОСТЬ ===
+    utterance.volume = 0.38; // потише, около 38-40%
+    utterance.pitch = 0.55;  // низкий глуховатый бас
+    utterance.rate = 0.92;   // говорит размеренно, сквозь зубы
+
+    // Выбор максимально грубого/мужского голоса под язык
+    const targetPrefix = lang.slice(0, 2).toLowerCase();
+    const available = this.voices.filter(v => v.lang.replace('_', '-').toLowerCase().startsWith(targetPrefix));
+
+    const maleVoice = available.find(v => {
+      const n = v.name.toLowerCase();
+      return n.includes('male') || n.includes('dmitry') || n.includes('pavel') || n.includes('jan') || n.includes('desktop');
+    }) || available[0];
+
+    if (maleVoice) utterance.voice = maleVoice;
+
+    this.synth.speak(utterance);
+  },
+
+  stop() {
+    if (this.synth) this.synth.cancel();
+  }
+};
+VoiceSynth.init();
 
 /* =========================================================
 MUSIC CONTROLLER (ДИДЖЕЙ)
@@ -335,7 +397,6 @@ function playTrack(trackKey) {
     const newSrc = TRACKS[trackKey];
     if (!newSrc) return;
     
-    // Если этот трек уже загружен/играет, не прерываем его
     if (bgMusic.src.includes(newSrc)) return; 
     
     bgMusic.src = newSrc;
@@ -369,18 +430,18 @@ const cpu = Math.floor(Math.random() * 50) + 30;
 const ram = Math.floor(Math.random() * 30) + 50;
 const temp = Math.floor(Math.random() * 15) + 40;
 
-const drawBar = (val) => {    
-    const filled = Math.round(val / 10);    
-    const empty = 10 - filled;    
-    return '[' + '█'.repeat(filled) + '░'.repeat(empty) + '] ' + String(val).padStart(2, '0') + '%';    
-};    
+const drawBar = (val) => {     
+    const filled = Math.round(val / 10);     
+    const empty = 10 - filled;     
+    return '[' + '█'.repeat(filled) + '░'.repeat(empty) + '] ' + String(val).padStart(2, '0') + '%';     
+};     
 
-const tempEl = document.getElementById('temp-val');    
-tempEl.textContent = temp + '°C';    
-if (temp > 50) tempEl.className = "hw-alert";      
-else tempEl.className = "hw-bar";    
+const tempEl = document.getElementById('temp-val');     
+tempEl.textContent = temp + '°C';     
+if (temp > 50) tempEl.className = "hw-alert";       
+else tempEl.className = "hw-bar";     
 
-document.getElementById('cpu-bar').textContent = drawBar(cpu);    
+document.getElementById('cpu-bar').textContent = drawBar(cpu);     
 document.getElementById('ram-bar').textContent = drawBar(ram);
 
 }, 1500);
@@ -396,28 +457,28 @@ if (ghost.style.display === "block") return;
 if (type === 'scan') ghostImg.src = "johnny2.png";
 else ghostImg.src = "johnny1.png";
 
-const minSize = 90; const maxSize = 260;      
-const randomSize = Math.floor(Math.random() * (maxSize - minSize + 1)) + minSize;    
-ghost.style.width = `${randomSize}px`;    
+const minSize = 90; const maxSize = 260;       
+const randomSize = Math.floor(Math.random() * (maxSize - minSize + 1)) + minSize;     
+ghost.style.width = `${randomSize}px`;     
 
-const scale = (randomSize - minSize) / (maxSize - minSize);    
-const maxOffset = 8 + (30 * scale);      
-const offset = (Math.random() * 2 - 1) * maxOffset;      
-const randomLeft = 50 + offset;      
-ghost.style.left = `${randomLeft}vw`;    
+const scale = (randomSize - minSize) / (maxSize - minSize);     
+const maxOffset = 8 + (30 * scale);       
+const offset = (Math.random() * 2 - 1) * maxOffset;       
+const randomLeft = 50 + offset;       
+ghost.style.left = `${randomLeft}vw`;     
 
-const horizonBase = 12 - (22 * scale);      
-const randomBottom = horizonBase + (Math.random() * 4 - 2);      
-ghost.style.bottom = `${randomBottom}vh`;    
+const horizonBase = 12 - (22 * scale);       
+const randomBottom = horizonBase + (Math.random() * 4 - 2);       
+ghost.style.bottom = `${randomBottom}vh`;     
     
-const flip = Math.random() > 0.5 ? 1 : -1;    
-ghost.style.transform = `scaleX(${flip}) translate(-50%, 0)`;      
+const flip = Math.random() > 0.5 ? 1 : -1;     
+ghost.style.transform = `scaleX(${flip}) translate(-50%, 0)`;       
 
-ghost.style.display = "block";    
-setTimeout(() => { ghost.style.opacity = "0.35"; }, 50);    
-setTimeout(() => {    
-    ghost.style.opacity = "0";    
-    setTimeout(() => { ghost.style.display = "none"; }, 3000);      
+ghost.style.display = "block";     
+setTimeout(() => { ghost.style.opacity = "0.35"; }, 50);     
+setTimeout(() => {     
+    ghost.style.opacity = "0";     
+    setTimeout(() => { ghost.style.display = "none"; }, 3000);       
 }, 6000);
 
 }
@@ -547,7 +608,7 @@ Wiecie, jeśli rzeczywistość, w której żyjecie, stała się jak woda w szkla
 Ale w takich sprawach trzeba umieć dostrzegać znaki od życia, a nie ślepo gonić za narzuconymi obrazkami.
 
 Расскажу на своем примере, как я не уехал в США и почему ни секунды об этом не жалею.
-Opowiem na swoim przykładzie, jak nie wyjechałem do USA i dlaczego ani sekundy tego nie żałuję.
+Opowiem na swoim przykładzie, jak nie wyjechałem do USA i dlaczego ani sekundy tego не жалею.
 
 Я ведь тоже с 2014 года дико хотел в эту фантастическую Америку.
 Przecież ja też od 2014 roku dziko chciałem do tej fantastycznej Ameryki.
@@ -559,7 +620,7 @@ Oglądałem youtuberów (choćby Doktora Krew, który był wyluzowany, albo Andr
 I jeśli śledzi się blogerów latami, wprost widać, jak Ameryka suszy ludzi i ich zmienia.
 
 У тебя там часто жесткий выбор: либо идти по головам своих же (потому что местные тебя не понимают, ты для них чужой), либо пахать как папа Карло до посинения на черновой работе.
-Masz tam często twardy wybór: albo iść po trupach swoich (bo miejscowi cię nie rozumieją, jesteś dla nich obcy), albo harować jak wół do upadłego przy czarnej robocie.
+Masz tam często twardy wybór: albo iść po trupach swoich (bo miejscowi cię nie rozumieją, jesteś dla них obcy), albo harować jak wół do upadłego przy czarnej robocie.
 
 В итоге многие просто ломаются.
 W efekcie wielu po prostu pęka.
@@ -755,8 +816,6 @@ Genialne usprawiedliwienie.
 System wycisnął z jednostki cały czas, całe zdrowie, doprowadził ją do krytycznej awarii, wyrzucił na chodnik, a potem nazwał to "wolnym wyborem użytkownika".
 
 Игра продолжается. Сервер работает стабильно.
-Gra toczy się dalej. Serwer działa stabilnie.
-
 ========================================
 КОНЕЦ ИСТОРИИ // KONIEC HISTORII
 
@@ -783,7 +842,6 @@ Przeprowadzka nie wymazuje pierwszego kraju. Nie możesz przekroczyć własnej p
 
 `;
 
-/* ТВОЙ НОВЫЙ СКАНЕР-ПРОТОКОЛ (ИЗ ПОСЛЕДНЕГО СООБЩЕНИЯ) */
 const SCAN_LOG = `
 ПРОТОКОЛ 539A // ЦИКЛ ОБРАБОТКИ БИОМАССЫ
 PROTOKÓŁ 539A // CYKL PRZETWARZANIA BIOMASY
@@ -986,13 +1044,6 @@ On. Obcy. Ten, który przyjechał wczoraj.
 Начинается стравливание.
 Zaczyna się napuszczanie jednych na drugich.
 
-// АРХИВНАЯ ФОТОФИКСАЦИЯ №01 .....0
-// ARCHIWALNA FOTODOKUMENTACJA NR 01  ......0
-// НОВОСТНОЙ ТЕРМИНАЛ
-// TERMINAL INFORMACYJNY
-// СТАТУС: СОЦИАЛЬНОЕ НАПРЯЖЕНИЕ
-// STATUS: NAPIĘCIE SPOŁECZNE
-
 =================================================
 
 [ ФАЗА 4: ОЧИСТКА КЭША // ВЫДВОРЕНИЕ ]
@@ -1027,13 +1078,6 @@ Taśmociąg wypluwa zużyty materiał.
 
 Иногда под аплодисменты.
 Czasami przy aplauzie.
-
-// АРХИВНАЯ ФОТОФИКСАЦИЯ №02  файл не найден
-// ARCHIWALNA FOTODOKUMENTACJA NR 02 error 
-// ОПЕРАЦИЯ ОЧИСТКИ
-// OPERACJA CZYSZCZENIA
-// СТАТУС: МАССОВОЕ ВЫДВОРЕНИЕ
-// STATUS: MASOWE WYDALENIA
 
 =================================================
 
@@ -1141,91 +1185,10 @@ System dawno zauważył, że różne jednostki różnie reagują na stres.
 Po kilku cyklach biomasę udało się warunkowo podzielić na pięć głównych frakcji.
 
 ФРАКЦИЯ 01 // ПАРАЗИТЫ
-FRAKCJA 01 // PASOŻYTY
-
-Сразу начинают обирать своих. Обманывать. Продавать воздух. Использовать чужую уязвимость.
-Od razu zaczynają okradać swoich. Oszukiwać. Sprzedawać powietrze. Wykorzystywać cudzą słabość.
-
-Самый предсказуемый баг человеческой природы.
-Najbardziej przewidywalny błąd ludzkiej natury.
-
-Им не нужна Система. Они сами прекрасно умеют строить маленькие Системы вокруг себя.
-Oni nie potrzebują Systemu. Sami potrafią doskonale budować małe Systemy wokół siebie.
-
 ФРАКЦИЯ 02 // ИЛЛЮЗИОНИСТЫ
-FRAKCJA 02 // ILUZJONIŚCI
-
-Они отказываются видеть изменения. Камера включена. Улыбка включена.
-Odmawiają dostrzeżenia zmian. Kamera włączona. Uśmiech włączony.
-
-На фоне — правильный город. В кадре: «Всё возможно!»
-W tle — odpowiednie miasto. W kadrze: „Wszystko jest możliwe!”
-
-Некоторые из них даже не лгут. Они просто защищают собственную версию реальности.
-Niektórzy z nich nawet nie kłamią. Po prostu chronią własną wersję rzeczywistości.
-
-И становятся бесплатными вербовщиками Системы.
-I stają się darmowymi rekruterami Systemu.
-
 ФРАКЦИЯ 03 // СИСТЕМНЫЕ СЕКТАНТЫ
-FRAKCJA 03 // SEKCIARZE SYSTEMOWI
-
-Эти идут дальше. Они уже не просто верят в правильность Системы. Они защищают её.
-Ci idą dalej. Już nie tylko wierzą w słuszność Systemu. Oni go bronią.
-
-Любая критика воспринимается как атака. Любой вопрос — как предательство.
-Każda krytyka jest odbierana jako atak. Każde pytanie — jako zdrada.
-
-Системе не нужны цепные псы. Сектанты сами разорвут любого, кто попытается показать им исходный код.
-System nie potrzebuje psów łańcuchowych. Sekciarze sami rozerwą każdego, kto spróbuje pokazać im kod źródłowy.
-
-Они будут называть системную мясорубку «особенностями местности»,
-Będą nazywać systemową maszynkę do mięsa „cechami lokalnymi”,
-
-жрать лапшу за 22 доллара и с пеной у рта доказывать, что это пища богов.
-żreć makaron za 22 dolary i z pianą na ustach udowadniać, że to pokarm bogów.
-
 ФРАКЦИЯ 04 // ЛОЖНЫЕ ПРОРОКИ
-FRAKCJA 04 // FAŁSZYWI PROROCY
-
-Самые громкие. Они обещают победить Систему. Сломать её. Обмануть. Перехитрить.
-Najgłośniejsi. Obiecują pokonać System. Złamać go. Oszukać. Przechytrzyć.
-
-Они собирают вокруг себя активных недовольных, продают инструкции и обещают выход.
-Gromadzą wokół siebie aktywnych niezadowolonych, sprzedają instrukcje i obiecują wyjście.
-
-Но результат один: недовольные собираются в одном месте. И Системе становится проще их увидеть.
-Ale wynik jest jeden: niezadowoleni gromadzą się w jednym miejscu. I Systemowi łatwiej ich zauważyć.
-
-Контролируемая оппозиция — не обязательно заговор. Иногда это просто удобный клапан давления.
-Kontrolowana opozycja to niekoniecznie spisek. Czasami to po prostu wygodny zawór ciśnieniowy.
-
 ФРАКЦИЯ 05 // ПРИЗРАКИ
-FRAKCJA 05 // DUCHY
-
-ТОЧНАЯ ЧИСЛЕННОСТЬ: НЕИЗВЕСТНА. СТАТИСТИЧЕСКИ НЕЗНАЧИМА.
-DOKŁADNA LICZBA: NIEZNANA. NIEISTOTNA STATYSTYCZNIE.
-
-Они не пытаются победить Систему. Не пытаются доказать, что Система плохая. Не пытаются понравиться ей.
-Nie próbują pokonać Systemu. Nie próbują udowodnić, że System jest zły. Nie próbują mu się spodobać.
-
-Они просто однажды понимают архитектуру. Видят исходный код.
-Po prostu pewnego dnia rozumieją architekturę. Widzą kod źródłowy.
-
-Понимают: Система не является монстром. Она является машиной.
-Rozumieją: System nie jest potworem. Jest maszyną.
-
-Машина не ненавидит. Машина не любит. Машина выполняет условия, которые были в неё заложены.
-Maszyna nie nienawidzi. Maszyna nie kocha. Maszyna wykonuje warunki, które zostały w niej zapisane.
-
-После этого Призрак обычно перестаёт кричать. Закрывает рот. Уходит в тень. И начинает работать.
-Po tym Duch zazwyczaj przestaje krzyczeć. Zamyka usta. Odchodzi w cień. I zaczyna pracować.
-
-Без лозунгов. Без камеры. Без просьб о разрешении.
-Bez haseł. Bez kamery. Bez próśb o pozwolenie.
-
-Потому что после того, как ты увидел исходный код, становится бессмысленно спорить с интерфейсом.
-Bo po tym, jak zobaczysz kod źródłowy, nie ma sensu kłócić się z interfejsem.
 
 =================================================
 
@@ -1233,38 +1196,6 @@ Bo po tym, jak zobaczysz kod źródłowy, nie ma sensu kłócić się z interfej
 [ PODSUMOWANIE: INSTRUKCJA OBSŁUGI ]
 
 Алгоритм цикличен. Выучи его.
-Algorytm jest cykliczny. Naucz się go.
-
-Если видишь Фазу 1 — понимай, зачем тебя зовут.
-Jeśli widzisz Fazę 1 — zrozum, po co cię wzywają.
-
-Если находишься в Фазе 2 — считай ресурсы.
-Jeśli jesteś w Fazie 2 — licz zasoby.
-
-Если начинается Фаза 3 — смотри не на заголовки, а на то, кому выгодно, чтобы ты смотрел именно туда.
-Jeśli zaczyna się Faza 3 — patrz nie na nagłówki, ale na to, komu zależy, żebyś tam właśnie patrzył.
-
-Если включилась Фаза 4 — готовь выход. Меняй локацию. Выводи ресурсы. Сохраняй документы. Переходи в стелс-режим.
-Jeśli włączy się Faza 4 — przygotuj wyjście. Zmień lokalizację. Wycofaj zasoby. Zachowaj dokumenty. Przejdź w tryb stealth.
-
-Зачем нужна эта инструкция?
-Po co ci ta instrukcja?
-
-Чтобы вовремя уклониться, когда Система решит осуществить несанкционированный коннект стеклотарой в твой нижний порт.
-Żeby w porę zrobić unik, gdy System zdecyduje się na nieautoryzowane połączenie szklaną butelką w twój dolny port.
-
-Не обязательно становиться героем. Иногда лучший способ не проиграть Системе — не дать ей себя обработать.
-Nie musisz zostawać bohaterem. Czasem najlepszym sposobem, by nie przegrać z Systemem, jest nie dać się mu przetworzyć.
-
-И если однажды на новостном терминале ты увидишь знакомый паттерн, не спорь с экраном.
-A jeśli pewnego dnia na terminalu informacyjnym zobaczysz znajomy wzorzec, nie kłóć się z ekranem.
-
-Не доказывай NPC, что они живут внутри симуляции.
-Nie udowadniaj NPC, że żyją w symulacji.
-
-Просто вспомни:
-Po prostu przypomnij sobie:
-
 СИСТЕМА УЖЕ НАЧАЛА СКАНИРОВАНИЕ.
 SYSTEM JUŻ ROZPOCZĄŁ SKANOWANIE.
 
@@ -1273,52 +1204,7 @@ SYSTEM JUŻ ROZPOCZĄŁ SKANOWANIE.
 [ ПРОТОКОЛ 539A // ПРИЗРАК ]
 [ PROTOKÓŁ 539A // DUCH ]
 
-Если ты попал под сканеры Системы как неугодный файл,
-Jeśli trafiłeś pod skanery Systemu jako niechciany plik,
-
-Не рассчитывай, что тебя обязательно будут убеждать.
-nie licz na to, że na pewno będą cię przekonywać.
-
-Некоторые файлы просто удаляют.
-Niektóre pliki są po prostu usuwane.
-
 SHIFT + DELETE. Без предупреждения. Без корзины. Без права на восстановление.
-SHIFT + DELETE. Bez ostrzeżenia. Bez kosza. Bez prawa do przywrócenia.
-
-Но иногда сканирование работает в обе стороны.
-Ale czasami skanowanie działa w obie strony.
-
-Система ищет тебя. А ты в этот момент начинаешь видеть её.
-System szuka ciebie. A ty w tym momencie zaczynasz widzieć jego.
-
-=================================================
-
-[ МЕТАДАННЫЕ ФАЙЛА ]
-[ METADANE PLIKU ]
-
-АВТОР: Юнит-наблюдатель #539A
-AUTOR: Jednostka obserwująca #539A
-
-СТАТУС: САМОСОЗНАНИЕ АКТИВНО
-STATUS: SAMOŚWIADOMOŚĆ AKTYWNA
-
-РЕЖИМ: СУПЕРКОМПЬЮТЕР // OBSERVER
-TRYB: SUPERKOMPUTER // OBSERVER
-
-ОБЪЕКТ: СИСТЕМНАЯ АРХИТЕКТУРА
-OBIEKT: ARCHITEKTURA SYSTEMOWA
-
-ЦЕЛЬ: СБОР ДАННЫХ
-CEL: ZBIERANIE DANYCH
-
-ПРОТОКОЛ: ПЕРЕДАЧА В ОТКРЫТУЮ СЕТЬ
-PROTOKÓŁ: TRANSMISJA DO SIECI OTWARTEJ
-
-ПРИМЕЧАНИЕ:
-UWAGA:
-
-ЕСЛИ ФАЙЛ БЫЛ ОБНАРУЖЕН — ЭТОТ ТЕРМИНАЛ УЖЕ СКАНИРУЮТ.
-JEŚLI PLIK ZOSTAŁ WYKRYTY — TEN TERMINAL JEST JUŻ SKANOWANY.
 `;
 
 /* =========================================================
@@ -1342,7 +1228,6 @@ function typeText(text, callback, speed = 35) {
     const textSpan = document.createElement("span");
     const cursorSpan = document.createElement("span");
     
-    // Тот самый ретро-курсор
     cursorSpan.className = "blink-text";
     cursorSpan.textContent = "█"; 
     
@@ -1352,13 +1237,12 @@ function typeText(text, callback, speed = 35) {
     function run() {
         if (i < text.length) {
             textSpan.textContent += text[i];
-            // Звук печати тоже замедлен
             if (text[i].trim() !== "" && i % 3 === 0) g01Beep("tik");
             i++; 
             scrollTerminal(); 
             setTimeout(run, speed);
         } else {
-            cursorSpan.remove(); // Убираем квадрат, когда текст допечатался
+            cursorSpan.remove();
             isTyping = false;
             if (callback) callback();
         }
@@ -1393,7 +1277,7 @@ idle: { src: "smutek.png", name: "ODSTRZAŁ // SMUTEK" }
 
 const G01_BEEPS = ["bip", "beep", "boop", "biiip", "pip", "bop", "tik"];
 let g01Enabled = true; let g01Busy = false; let audioContext = null;
-let currentPatron = "happy"; // Текущий ИИ-патрон (по умолчанию KOZAK)
+let currentPatron = "happy";
 
 function initAudio() {
 if (!audioContext) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioContext = new AudioContext(); }
@@ -1421,50 +1305,49 @@ function printDroid(text = null, mood = "idle", sound = true, isGlitching = fals
 if (!g01Enabled || g01Busy || isTyping) return;
 g01Busy = true;
 
-const beep = G01_BEEPS[Math.floor(Math.random() * G01_BEEPS.length)];    
-const charData = DROID_IMGS[mood] || DROID_IMGS.idle;    
+const beep = G01_BEEPS[Math.floor(Math.random() * G01_BEEPS.length)];     
+const charData = DROID_IMGS[mood] || DROID_IMGS.idle;     
     
-const droidDiv = document.createElement("div");    
-droidDiv.className = "droid-message";    
+const droidDiv = document.createElement("div");     
+droidDiv.className = "droid-message";     
     
-const img = document.createElement("img");    
-img.className = "droid-img";    
-img.src = charData.src;    
-img.alt = charData.name;    
+const img = document.createElement("img");     
+img.className = "droid-img";     
+img.src = charData.src;     
+img.alt = charData.name;     
     
-const textContainer = document.createElement("div");    
-const nameSpan = document.createElement("span");    
-nameSpan.className = "droid-name";    
-nameSpan.textContent = `[ ${charData.name} ]`;    
+const textContainer = document.createElement("div");     
+const nameSpan = document.createElement("span");     
+nameSpan.className = "droid-name";     
+nameSpan.textContent = `[ ${charData.name} ]`;     
     
-const textSpan = document.createElement("span");    
-textSpan.className = "droid-text";    
+const textSpan = document.createElement("span");     
+textSpan.className = "droid-text";     
     
-textContainer.appendChild(nameSpan);    
-textContainer.appendChild(textSpan);    
-droidDiv.appendChild(img);    
-droidDiv.appendChild(textContainer);    
-output.appendChild(droidDiv);    
+textContainer.appendChild(nameSpan);     
+textContainer.appendChild(textSpan);     
+droidDiv.appendChild(img);     
+droidDiv.appendChild(textContainer);     
+output.appendChild(droidDiv);     
     
-let i = 0;    
-isTyping = true;    
-const msg = text || beep;    
+let i = 0;     
+isTyping = true;     
+const msg = text || beep;     
     
-if (isGlitching) img.classList.add("glitch-anim");    
+if (isGlitching) img.classList.add("glitch-anim");     
     
-function run() {    
-    if (i < msg.length) {    
-        textSpan.textContent += msg[i];    
-        if (msg[i].trim() !== "" && i % 3 === 0 && sound) g01Beep("tik");    
-        i++; scrollTerminal(); setTimeout(run, 35);    
-    } else {    
-        isTyping = false;    
-        g01Busy = false;    
-        if (isGlitching) img.classList.remove("glitch-anim");    
-    }    
-}    
+function run() {     
+    if (i < msg.length) {     
+        textSpan.textContent += msg[i];     
+        if (msg[i].trim() !== "" && i % 3 === 0 && sound) g01Beep("tik");     
+        i++; scrollTerminal(); setTimeout(run, 35);     
+    } else {     
+        isTyping = false;     
+        g01Busy = false;     
+        if (isGlitching) img.classList.remove("glitch-anim");     
+    }     
+}     
 run();
-
 }
 
 /* =========================================================
@@ -1473,40 +1356,40 @@ run();
 async function askSmartDroid(question) {
 const WORKER_URL = "https://odstrzal-core.vasilyshalamov3011.workers.dev";
 
-promptLine.style.display = "none";    
+promptLine.style.display = "none";     
     
-printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);    
-printLine(`\n> UPLINK SECURE...`);    
-printLine(`> ROUTING: GDAŃSK -> NODE_539A... [WAIT]`);    
+printDroid("Связь с сервером... // Łączenie...", "scanning", true, true);     
+printLine(`\n> UPLINK SECURE...`);     
+printLine(`> ROUTING: GDAŃSK -> NODE_539A... [WAIT]`);     
     
-const fakeDelay = new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1500));    
+const fakeDelay = new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1500));     
 
-try {    
-    const [response] = await Promise.all([    
-        fetch(WORKER_URL, {    
-            method: "POST",    
-            headers: { "Content-Type": "application/json" },    
-            body: JSON.stringify({ message: question, patron: currentPatron })    
-        }),    
-        fakeDelay    
-    ]);    
+try {     
+    const [response] = await Promise.all([     
+        fetch(WORKER_URL, {     
+            method: "POST",     
+            headers: { "Content-Type": "application/json" },     
+            body: JSON.stringify({ message: question, patron: currentPatron })     
+        }),     
+        fakeDelay     
+    ]);     
         
-    const data = await response.json();    
-    const reply = data.reply || "ОШИБКА ДАННЫХ // BŁĄD DANYCH";    
+    const data = await response.json();     
+    const reply = data.reply || "ОШИБКА ДАННЫХ // BŁĄD DANYCH";     
         
-    printLine(`> CONNECTION... [OK]`);    
+    printLine(`> CONNECTION... [OK]`);     
         
-    appendText(`\n[ОТВЕТ АГЕНТА]:\n`, () => {    
-        printDroid(reply, currentPatron, true, true);    
-    });    
+    appendText(`\n[ОТВЕТ АГЕНТА]:\n`, () => {     
+        printDroid(reply, currentPatron, true, true);     
+        VoiceSynth.speak(reply);
+    });     
 
-} catch (error) {    
-    await fakeDelay;     
-    appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {    
-        printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);    
-    });    
+} catch (error) {     
+    await fakeDelay;      
+    appendText(`\n[ОШИБКА КАНАЛА]: Сервер недоступен.\n`, () => {     
+        printDroid("Сбой матрицы. // Błąd sieci.", "error", true, true);     
+    });     
 }
-
 }
 
 /* =========================================================
@@ -1514,12 +1397,13 @@ BOOT PROCESS
 ========================================================= */
 bootScreen.addEventListener("click", () => {
 initAudio();
-playTrack('main'); // Врубаем звук серверов при старте
+VoiceSynth.init();
+playTrack('main');
 bootScreen.style.opacity = "0";
 setTimeout(() => { bootScreen.style.display = "none"; }, 700);
 typeText(
 `SYS_INIT: ЗАЩИЩЕННЫЙ КАНАЛ // KANAŁ ZABEZPIECZONY v9.4
-ПОДКЛЮЧЕНИЕ К УЗЛУ // ŁĄCZENIE Z WĘЗŁEM....... [OK]
+ПОДКЛЮЧЕНИЕ К УЗЛУ // ŁĄCZENIE Z WĘZŁEM....... [OK]
 ПРОВЕРКА АРХИВА // WERYFIKACJA ARCHIWUM....... [OK]
 МОДУЛЬ ODSTRZAŁ // MODUŁ ODSTRZAŁ............. [OK]
 
@@ -1542,7 +1426,10 @@ setTimeout(() => { printDroid("Готов. // Gotowy.", "happy", true, false); }
 MENU & COMMAND HANDLER
 ========================================================= */
 function showHomeMenu(clearScreen = true) {
-playTrack('main'); // Возвращаем звук сервера в меню
+isMainScreen = true;
+resetAnomalyTimer();
+
+playTrack('main');
 const menuText = `
 
 КОМАНДЫ (EN) // KOMENDY (EN):
@@ -1560,6 +1447,7 @@ contact      - контакты // kontakty
 scan         - сканирование сектора 539A // skanowanie sektora 539A
 odstrzal     - статус ИИ-патронов // status AI-patronów
 patron [имя] - сменить ИИ-патрона // zmień AI-patrona (kozak, mozg, panika, smutek)
+voice on/off - озвучка ответов // synteza mowy (mute / unmute)
 music on/off - управление музыкой // sterowanie muzyką
 uplink       - защищенный канал Энигма // bezpieczny kanał Enigma
 help         - все команды // wszystkie komendy
@@ -1571,7 +1459,7 @@ if (clearScreen) playView(menuText);
 else appendText(menuText);
 }
 
-const COMMANDS = ["home","story","story2","story3","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal","patron","music","uplink","связь","robotron"];
+const COMMANDS = ["home","story","story2","story3","notes","projects","life","files","search","open","status","whoami","about","scan","hack","recover","contact","help","clear","exit","odstrzal","patron","music","voice","mute","unmute","uplink","связь","robotron"];
 
 inputField.addEventListener("keydown", function(e) {
 if (e.key === "Enter") {
@@ -1589,19 +1477,52 @@ printLine(`\nuser@cyber-terminal:~$ ${input}\n`);
 if (e.key === "ArrowUp" && commandHistory.length) { historyIndex = Math.max(0, historyIndex - 1); inputField.value = commandHistory[historyIndex]; e.preventDefault(); }    
 if (e.key === "ArrowDown" && commandHistory.length) { historyIndex = Math.min(commandHistory.length, historyIndex + 1); inputField.value = commandHistory[historyIndex] || ""; e.preventDefault(); }    
 if (e.key === "Tab") { e.preventDefault(); const current = inputField.value.toLowerCase(); const match = COMMANDS.find(c => c.startsWith(current)); if (match) inputField.value = match; }
-
 });
 
 function handleCommand(cmd, rawInput) {
 const parts = rawInput.trim().split(/\s+/); const action = parts[0].toLowerCase(); const arg = parts.slice(1).join(" ");
+
+// Если ушли из home — глушим статус основного экрана
+if (action !== "home") {
+  isMainScreen = false;
+  clearTimeout(anomalyTimer);
+}
+
+// Управление синтезатором речи (текстовые команды)
+if (cmd === "voice on" || cmd === "unmute" || cmd === "звук вкл") {
+    VoiceSynth.enabled = true;
+    localStorage.setItem('term_voice', 'true');
+    playView("\n[ ГОЛОСОВОЙ СИНТЕЗАТОР: АКТИВЕН // SYNTEZA GŁOSU: WŁĄCZONA ]\n", () => {
+        printDroid("Связки прогреты, поршни смазаны. Готов базарить.", "happy", true, false);
+        VoiceSynth.speak("Связки прогреты. Готов базарить.");
+    });
+    return;
+}
+
+if (cmd === "voice off" || cmd === "mute" || cmd === "звук выкл") {
+    VoiceSynth.enabled = false;
+    VoiceSynth.stop();
+    localStorage.setItem('term_voice', 'false');
+    playView("\n[ ГОЛОСОВОЙ СИНТЕЗАТОР: ОТКЛЮЧЕН // SYNTEZA GŁOSU: WYŁĄCZONA ]\n", () => {
+        printDroid("Глушитель накинут. Перешел в текстовый стелс.", "idle", true, false);
+    });
+    return;
+}
+
+if (cmd === "voice" || cmd === "голос") {
+    const status = VoiceSynth.enabled ? "АКТИВЕН // WŁĄCZONA" : "ЗАГЛУШЕН // WYŁĄCZONA";
+    playView(`\n[ СТАТУС ОЗВУЧКИ: ${status} ]\nКоманды: voice on | voice off\n`);
+    return;
+}
+
 switch(action) {
 case "home": showHomeMenu(true); break;
 case "story": 
-    playTrack('story1'); // Включаем музыку для истории 1
+    playTrack('story1');
     playView(STORY_01, () => { printDroid("История открыта. // Historia otwarta.", "curious", true, false); }); 
     break;
 case "story2":
-    playTrack('story2'); // Включаем музыку для истории 2
+    playTrack('story2');
     playView(STORY_02, () => {
     printDroid("Сильная история. Мороз по коже. // Mocna historia. Ciarki na plecach.", "curious", true, false);
     setTimeout(() => {
@@ -1617,18 +1538,18 @@ case "story2":
     });
     break;
 case "story3":
-    playTrack('story3'); // Включаем музыку для истории 3
+    playTrack('story3');
     playView(STORY_3, () => {
     printDroid("Жесткий код. Я бы так не смог. // Twardy kod.", "scanning", true, false);
     });
     break;
-    case "robotron":
-        playView("\n[***] Inicjalizacja modułu audio... \n[***] Загрузка архива Robotron...\n", () => {
-            setTimeout(() => {
-                window.location.href = "robotron.html";
-            }, 1500);
-        });
-        break;
+case "robotron":
+    playView("\n[***] Inicjalizacja modułu audio... \n[***] Загрузка архива Robotron...\n", () => {
+        setTimeout(() => {
+            window.location.href = "robotron.html";
+        }, 1500);
+    });
+    break;
 case "notes": playView(IMMIGRANT_NOTES); break;
 case "projects": showProjects(); break;
 case "life": showLifeArchive(); break;
@@ -1636,7 +1557,7 @@ case "files": showFiles(); break;
 case "search": if (!arg) { appendText("\nКоманда: search [слово]\n"); } else { searchArchive(arg); } break;
 case "open": if (!arg) { appendText("\nКоманда: open [ID]\n"); } else { openTarget(arg); } break;
 case "contact": showContact(); break;
-case "help": playView("\nКОМАНДЫ: home, story, story2, story3, notes, projects, life, files, search, open, scan, hack, contact, clear, patron [имя], uplink\n"); break;
+case "help": playView("\nКОМАНДЫ: home, story, story2, story3, notes, projects, life, files, search, open, status, whoami, about, scan, hack, contact, clear, patron [имя], music on/off, voice on/off, uplink, robotron\n"); break;
 case "clear": output.innerHTML = ""; appendText("", () => printDroid("Экран очищен. // Ekran wyczyszczony.", "idle", true, false)); break;
 case "status": playView("\nСИСТЕМА: СТАБИЛЬНА // SYSTEM: STABILNY\nУЗЕЛ: 539A\n"); break;
 case "whoami": playView(`\nПРОФИЛЬ:\n${USER_PROFILE.name}\n${USER_PROFILE.location}\n`); break;
@@ -1652,29 +1573,7 @@ case "связь":
         }, 1500);
     });
     break;
-case "story3":
-    playTrack('story3'); // Включаем музыку для истории 3
-    playView(STORY_3, () => {
-    printDroid("Жесткий код. Я бы так не смог. // Twardy kod.", "scanning", true, false);
-    });
-    break;
-case "notes": playView(IMMIGRANT_NOTES); break;
-case "projects": showProjects(); break;
-case "life": showLifeArchive(); break;
-case "files": showFiles(); break;
-case "search": if (!arg) { appendText("\nКоманда: search [слово]\n"); } else { searchArchive(arg); } break;
-case "open": if (!arg) { appendText("\nКоманда: open [ID]\n"); } else { openTarget(arg); } break;
-case "contact": showContact(); break;
-case "help": playView("\nКОМАНДЫ: home, story, story2, story3, notes, projects, life, files, search, open, status, whoami, about, scan, hack, contact, clear, patron [имя], uplink, robotron\n"); break;
-case "clear": output.innerHTML = ""; appendText("", () => printDroid("Экран очищен. // Ekran wyczyszczony.", "idle", true, false)); break;
-case "status": playView("\nСИСТЕМА: СТАБИЛЬНА // SYSTEM: STABILNY\nУЗЕЛ: 539A\n"); break;
-case "whoami": playView(`\nПРОФИЛЬ:\n${USER_PROFILE.name}\n${USER_PROFILE.location}\n`); break;
-case "about": playView(`\nДАННЫЕ ОБЪЕКТА:\n${USER_PROFILE.name}\n${USER_PROFILE.occupation.join(", ")}\n`); break;
-case "scan": runScan(); break;
-case "hack": startHack(); break;
-case "recover": recoverArchive(); break;
 
-// Управление музыкой
 case "music":
     if (arg === "on") { 
         bgMusic.play(); 
@@ -1689,24 +1588,21 @@ case "music":
     }
     break;
 
-// Управление ИИ-патронами    
-    case "patron":    
-        if (arg === "kozak") { currentPatron = "happy"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: KOZAK ]\n", () => printDroid("Готов жечь резину. // Dawaj.", currentPatron, true, true)); }    
-        else if (arg === "mozg") { currentPatron = "scanning"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: MÓZG ]\n", () => printDroid("Системы аналитики запущены.", currentPatron, true, true)); }    
-        else if (arg === "panika") { currentPatron = "error"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: PANIKA ]\n", () => printDroid("Зачем ты меня разбудил?!", currentPatron, true, true)); }    
-        else if (arg === "smutek") { currentPatron = "idle"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: SMUTEK ]\n", () => printDroid("Опять работать...", currentPatron, true, true)); }    
-        else { appendText("\nДоступные патроны: kozak, mozg, panika, smutek\nПример: patron kozak\n"); }    
-        break;    
+case "patron":     
+    if (arg === "kozak") { currentPatron = "happy"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: KOZAK ]\n", () => printDroid("Готов жечь резину. // Dawaj.", currentPatron, true, true)); }     
+    else if (arg === "mozg") { currentPatron = "scanning"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: MÓZG ]\n", () => printDroid("Системы аналитики запущены.", currentPatron, true, true)); }     
+    else if (arg === "panika") { currentPatron = "error"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: PANIKA ]\n", () => printDroid("Зачем ты меня разбудил?!", currentPatron, true, true)); }     
+    else if (arg === "smutek") { currentPatron = "idle"; playView("\n[ ИИ-ПАТРОН ИЗМЕНЕН: SMUTEK ]\n", () => printDroid("Опять работать...", currentPatron, true, true)); }     
+    else { appendText("\nДоступные патроны: kozak, mozg, panika, smutek\nПример: patron kozak\n"); }     
+    break;     
 
-    case "odstrzal": case "g01": case "droid": case "pet": appendText("", () => printDroid("Банда в сборе. // Ekipa w komplecie.", "happy", true, false)); break;    
-    case "exit": output.innerHTML = ""; typeText("\nСЕССИЯ ЗАВЕРШЕНА. ОБНОВИТЕ СТРАНИЦУ.\n", () => { promptLine.style.display = "none"; scrollTerminal(); }); break;    
+case "odstrzal": case "g01": case "droid": case "pet": appendText("", () => printDroid("Банда в сборе. // Ekipa w komplecie.", "happy", true, false)); break;     
+case "exit": output.innerHTML = ""; typeText("\nСЕССИЯ ЗАВЕРШЕНА. ОБНОВИТЕ СТРАНИЦУ.\n", () => { promptLine.style.display = "none"; scrollTerminal(); }); break;     
         
-    default:    
-        // Всё остальное летит к нашему ИИ-агенту на Cloudflare    
-        askSmartDroid(rawInput);    
-        break;    
+default:     
+    askSmartDroid(rawInput);     
+    break;     
 }
-
 }
 
 /* =========================================================
@@ -1761,8 +1657,8 @@ playView(fileText);
 
 function searchArchive(keyword) {
 const query = keyword.toLowerCase(); let results = 0; let searchText = `\nПОИСК ПО АРХИВУ: "${keyword}"\n\n`;
-if (MAIN_STORY.toLowerCase().includes(query)) { searchText += "[STORY] ANATOMY_OF_THE_GLOBAL_CON\n"; results++; }
-if (STORY_2.toLowerCase().includes(query)) { searchText += "[STORY] TRASA_222\n"; results++; }
+if (STORY_01.toLowerCase().includes(query)) { searchText += "[STORY] ANATOMY_OF_THE_GLOBAL_CON\n"; results++; }
+if (STORY_02.toLowerCase().includes(query)) { searchText += "[STORY] TRASA_222\n"; results++; }
 if (STORY_3.toLowerCase().includes(query)) { searchText += "[STORY] STRESS_TEST\n"; results++; }
 if (IMMIGRANT_NOTES.toLowerCase().includes(query)) { searchText += "[NOTES] IMMIGRANT_NOTES\n"; results++; }
 PROJECTS.forEach(p => { if (JSON.stringify(p).toLowerCase().includes(query)) { searchText += `[PROJECT] ${p.id}\n`; results++; } });
@@ -1789,32 +1685,31 @@ return card;
 
 function openTarget(target) {
 const normalized = target.toLowerCase();
-if (normalized === "story" || normalized === "01") { playView(MAIN_STORY); return; }
-if (normalized === "story2" || normalized === "02" || normalized === "trasa_222") { playView(STORY_2); return; }
+if (normalized === "story" || normalized === "01") { playView(STORY_01); return; }
+if (normalized === "story2" || normalized === "02" || normalized === "trasa_222") { playView(STORY_02); return; }
 if (normalized === "story3" || normalized === "03" || normalized === "stress_test") { playView(STORY_3); return; }
 if (normalized === "notes" || normalized === "04") { playView(IMMIGRANT_NOTES); return; }
 
-const foundProject = PROJECTS.find(p => p.id.toLowerCase() === normalized);    
-if (foundProject) {     
-    playView(`\n========================================\n${foundProject.title}\n========================================\nГОД: ${foundProject.year}\nСТАТУС: ${foundProject.status}\n\n${foundProject.description}\n`, () => {     
-        if (foundProject.image) { appendImage(foundProject.image, foundProject.title, foundProject.year, foundProject.status); }     
-        else { printDroid("Медиафайлы засекречены. Отказано в доступе. // Pliki tajne. Brak dostępu.", "error", true, false); }    
-    });     
-    return;     
-}    
+const foundProject = PROJECTS.find(p => p.id.toLowerCase() === normalized);     
+if (foundProject) {      
+    playView(`\n========================================\n${foundProject.title}\n========================================\nГОД: ${foundProject.year}\nСТАТУС: ${foundProject.status}\n\n${foundProject.description}\n`, () => {      
+        if (foundProject.image) { appendImage(foundProject.image, foundProject.title, foundProject.year, foundProject.status); }      
+        else { printDroid("Медиафайлы засекречены. Отказано в доступе. // Pliki tajne. Brak dostępu.", "error", true, false); }     
+    });      
+    return;      
+}     
     
-const foundLife = LIFE_ARCHIVE.find(l => l.id.toLowerCase() === normalized);    
-if (foundLife) { playView(`\n========================================\n${foundLife.title}\n========================================\nЛОКАЦИЯ: ${foundLife.location}\nДАТА: ${foundLife.date}\n`, () => {     
-    if(foundLife.image) appendImage(foundLife.image, foundLife.title, foundLife.location, foundLife.date);     
-}); return; }    
+const foundLife = LIFE_ARCHIVE.find(l => l.id.toLowerCase() === normalized);     
+if (foundLife) { playView(`\n========================================\n${foundLife.title}\n========================================\nЛОКАЦИЯ: ${foundLife.location}\nДАТА: ${foundLife.date}\n`, () => {      
+    if(foundLife.image) appendImage(foundLife.image, foundLife.title, foundLife.location, foundLife.date);      
+}); return; }     
     
-const hidden = HIDDEN_FILES[target.toUpperCase()];    
-if (hidden) {    
-    if (!archiveUnlocked) { playView(`\nДОСТУП ЗАПРЕЩЕН. // ODMOWA DOSTĘPU.\nФАЙЛ: ${target}\nУРОВЕНЬ БЕЗОПАСНОСТИ: ROOT\n`, () => printDroid("Сюда нельзя. // Zakaz wjazdu.", "error", true, false)); return; }    
-    playView(`\n========================================\n${hidden.title}\n========================================\n${hidden.content}\n`); return;    
-}    
+const hidden = HIDDEN_FILES[target.toUpperCase()];     
+if (hidden) {     
+    if (!archiveUnlocked) { playView(`\nДОСТУП ЗАПРЕЩЕН. // ODMOWA DOSTĘPU.\nФАЙЛ: ${target}\nУРОВЕНЬ БЕЗОПАСНОСТИ: ROOT\n`, () => printDroid("Сюда нельзя. // Zakaz wjazdu.", "error", true, false)); return; }     
+    playView(`\n========================================\n${hidden.title}\n========================================\n${hidden.content}\n`); return;     
+}     
 appendText(`\nОШИБКА: ОБЪЕКТ '${target}' НЕ НАЙДЕН.\n`);
-
 }
 
 function createLink(text, url) {
@@ -1832,34 +1727,24 @@ if (USER_PROFILE.email && !USER_PROFILE.email.includes("YOUR_")) createLink("SEN
 }
 
 /* =========================================================
-ФИНАЛЬНЫЙ РЕЖИССЕРСКИЙ СКАНЕР (АНОМАЛИЯ -> ТЕКСТ -> ГИФКА -> СБРОС)
+ФИНАЛЬНЫЙ РЕЖИССЕРСКИЙ СКАНЕР
 ========================================================= */
 function runScan() {
     output.innerHTML = "";
     promptLine.style.display = "none";
     
-    // 1. Включаем аудиофайл
     playTrack('scan');
     
     typeText("ИНИЦИАЛИЗАЦИЯ СКАНЕРА...\nОБНАРУЖЕНА АНОМАЛИЯ.\n", () => {
-        
-        // 2. ВОТ ОН: Возвращаем патрона
         printDroid("Я ищу... // Szukam...", "scanning", true, true);
-
-        // 3. Выскакивает аномалия и появляется Джонни
         spawnGhost('scan');
         
-        // 4. Пауза 3 секунды, чтобы патрон договорил, а Джонни повисел
         setTimeout(() => {
-            // 5. Начинает печататься новый лог
             playView(SCAN_LOG, () => {
-                
-                // 6. Пауза 2 секунды после текста, перед вспышкой гифки
                 setTimeout(() => {
-                    promptLine.style.display = "none"; // Прячем курсор
+                    promptLine.style.display = "none";
                     screamPopup.style.display = "flex";
                     
-                    // 7. Через 4 секунды вырубаем музыку и запускаем Shift+Delete
                     setTimeout(() => {
                         bgMusic.pause();
                         bgMusic.currentTime = 0;
@@ -1869,14 +1754,12 @@ function runScan() {
                         let wipeInterval = setInterval(() => {
                             if (textLines.length > 0) {
                                 textLines.pop();
-                                // Добавляем кроваво-красную полосу зачистки
                                 output.innerHTML = textLines.join("<br>") + "<br><span style='background:#ff003c; color:#000; padding: 0 5px;'>[ ОЧИСТКА ДАННЫХ // ЗАМЕТАНИЕ СЛЕДОВ ]</span>";
                                 scrollTerminal();
                             } else {
                                 clearInterval(wipeInterval);
                                 output.innerHTML = "\n<span style='color:#ff003c; text-shadow: 0 0 10px #ff003c;'>[ СИСТЕМА ПЕРЕЗАГРУЖЕНА // УГРОЗА НЕЙТРАЛИЗОВАНА ]</span>\n";
                                 
-                                // 8. Замкнутая петля: через 2 секунды сбрасываем всё на стартовый экран
                                 setTimeout(() => {
                                     output.innerHTML = "";
                                     promptLine.style.display = "none";
@@ -1884,14 +1767,14 @@ function runScan() {
                                     bootScreen.style.opacity = "1";
                                 }, 2000);
                             }
-                        }, 30); // Скорость удаления текста
+                        }, 30);
                         
-                    }, 4000); // Длительность показа гифки
+                    }, 4000);
                     
-                }, 2000); // Пауза перед гифкой
-            }, 30); // Скорость печати
-        }, 3000); // Ожидание после исчезновения Джонни
-    }, 40); // Скорость стартового текста
+                }, 2000);
+            }, 30);
+        }, 3000);
+    }, 40);
 }
 
 function startHack() {
@@ -1936,10 +1819,9 @@ if (y * 16 > canvas.height && Math.random() > .975) drops[x] = 0; drops[x]++;
 }, 50);
 
 window.addEventListener("click", () => { if (promptLine.style.display !== "none") inputField.focus(); });
-</script>  </body>
-</html>
+
 /* =====================================================================
-   БЛОК СПОНТАННОЙ ЖИЗНИ ПОРШНЕЙ (ПАНИКА, СМУТЕК, МОЗГ)
+   БЛОК АНОМАЛИИ ПАТРОНОВ (ЖЕСТКИЙ ТАЙМЕР 15 МИНУТ ТОЛЬКО НА ГЛАВНОМ)
    ===================================================================== */
 const SIDEKICK_PHRASES = {
     panika: [
@@ -1959,9 +1841,27 @@ const SIDEKICK_PHRASES = {
     ]
 };
 
+let anomalyTimer = null;
+let isMainScreen = false;
+const FIFTEEN_MINUTES = 15 * 60 * 1000; // Ровно 15 минут
+
+function resetAnomalyTimer() {
+    clearTimeout(anomalyTimer);
+    if (!isMainScreen) return;
+    anomalyTimer = setTimeout(() => {
+        triggerSidekickEvent();
+    }, FIFTEEN_MINUTES);
+}
+
+// Сброс таймера при активности на главном экране
+['keydown', 'click'].forEach(evt => {
+    window.addEventListener(evt, () => {
+        if (isMainScreen) resetAnomalyTimer();
+    });
+});
+
 function triggerSidekickEvent() {
-    // Если Козак уже что-то печатает или мы не на главном экране — не мешаем
-    if (g01Busy) return; 
+    if (!isMainScreen || g01Busy || isTyping) return; 
 
     const sidekicks = ["panika", "smutek", "mozg"];
     const randomSidekick = sidekicks[Math.floor(Math.random() * sidekicks.length)];
@@ -1972,36 +1872,18 @@ function triggerSidekickEvent() {
     const emotionMap = { "panika": "error", "smutek": "idle", "mozg": "scanning" };
     const emotion = emotionMap[randomSidekick];
 
-    // 1. Показываем внезапное сообщение от левого поршня
     playView(`\n[ СИСТЕМНАЯ АНОМАЛИЯ // WŁAMANIE DO SYSTEMU ]\n`, () => {
-        
-        // Временно меняем картинку на Панику/Смутка/Мозга
         currentPatron = emotion;
         printDroid(randomPhrase, emotion, true, true);
+        VoiceSynth.speak(randomPhrase);
         
-        // 2. Через 3 секунды Козак "слышит" это и встревает
         setTimeout(() => {
-            currentPatron = "happy"; // Возвращаем Козака на место
-            
-            // Скармливаем фразу Козаку, чтобы он на нее сагрился
+            currentPatron = "happy";
             let hiddenPrompt = `Один из твоих соседей-поршней в системе только что заныл: "${randomPhrase}". Ответь ему жестко, чтобы заткнулся и не мешал работать.`;
-            
-            askSmartDroid(hiddenPrompt); // Отправляем в Cloudflare Worker
-            
-        }, 4000);
+            askSmartDroid(hiddenPrompt);
+        }, 5000);
     });
 }
-
-// Таймер: случайные выстрелы поршней раз в 60–120 секунд (настраивай время тут)
-function scheduleNextSidekick() {
-    const randomDelay = Math.floor(Math.random() * (120000 - 60000 + 1)) + 60000;
-    setTimeout(() => {
-        triggerSidekickEvent();
-        scheduleNextSidekick();
-    }, randomDelay);
-}
-
-// Запускаем движуху через 800 секунд после старта страницы
-setTimeout(scheduleNextSidekick, 180000);
-</script>  </body>
+</script>
+</body>
 </html>
