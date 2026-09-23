@@ -32,7 +32,7 @@
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 1;
-            opacity: 0.75; /* Поднял яркость дождя, чтобы он пробивал стекло */
+            opacity: 0.75;
             pointer-events: none;
         }
 
@@ -46,7 +46,6 @@
             z-index: 10; 
         }
 
-        /* ПРОЗРАЧНОЕ ТОНИРОВАННОЕ СТЕКЛО (15% вместо 75%) */
         .terminal-frame {
             background: rgba(0, 15, 5, 0.15); 
             backdrop-filter: blur(4px);
@@ -63,7 +62,7 @@
             right: 15px;
             cursor: pointer;
             border: 1px solid #00ff41;
-            background: rgba(0, 15, 5, 0.15); /* Прозрачность 15% */
+            background: rgba(0, 15, 5, 0.15);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             color: #00ff41;
@@ -117,15 +116,68 @@
         .hidden {
             display: none !important;
         }
+
+        /* =========================================================
+           КРАСНАЯ КНОПКА ЗАПУСКА КАНАЛА
+           ========================================================= */
+        #launch-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 5, 0.96);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            transition: opacity 0.5s ease;
+        }
+
+        .ignite-btn {
+            background: #ff003c;
+            color: #000;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 19px;
+            font-weight: 900;
+            padding: 16px 32px;
+            border: 2px solid #ff3366;
+            cursor: pointer;
+            letter-spacing: 2px;
+            box-shadow: 0 0 30px rgba(255, 0, 60, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+        }
+
+        .ignite-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 0 45px rgba(255, 0, 60, 1);
+        }
+
+        .ignite-sub {
+            color: #ff003c;
+            font-size: 12px;
+            margin-top: 15px;
+            letter-spacing: 2px;
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.2; }
+        }
     </style>
 </head>
 <body>
+    <!-- ОВЕРЛЕЙ ЗАПУСКА -->
+    <div id="launch-overlay">
+        <button class="ignite-btn" onclick="igniteEnigma()">[●] PODŁĄCZ // ЗАПУСК КАНАЛА</button>
+        <div class="ignite-sub">&gt; INICJALIZACJA PROTOKOŁU ENIGMA-M &lt;</div>
+    </div>
+
     <div class="crt-overlay"></div>
     <canvas id="matrixCanvas"></canvas>
     
-    <audio id="bg-audio" loop preload="auto">
-        <source src="https://github.com/tholman/elevator.js/blob/master/demo/music/elevator.mp3?raw=true" type="audio/mpeg">
-    </audio>
+    <!-- Локальный аудиофайл -->
+    <audio id="bg-audio" loop preload="auto" src="server_noise.m4a"></audio>
     
     <div id="exit-btn" onclick="window.location.href='index.html'">
         [X] ZAMKNIJ / ЗАКРЫТЬ
@@ -146,7 +198,7 @@
         const inputContainer = document.getElementById("input-container");
         const userInput = document.getElementById("userInput");
         const bgAudio = document.getElementById("bg-audio");
-        bgAudio.volume = 0.05; 
+        bgAudio.volume = 0.25; 
 
         // =========================================================
         // МАТРИЧНЫЙ ДОЖДЬ
@@ -197,7 +249,7 @@
         const _endpoint = atob(_domain_part1) + _sys_key + atob(_domain_part2);
 
         // =========================================================
-        // АУДИО И ПЕЧАТЬ (С КРАСНЫМ ЗНАКОМ ВОСКЛИЦАНИЯ)
+        // АУДИО И ПЕЧАТЬ
         // =========================================================
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playKeystroke() {
@@ -314,6 +366,24 @@
             userInput.focus();
         }
 
+        // =========================================================
+        // ПУСК ПО КРАСНОЙ КНОПКЕ
+        // =========================================================
+        function igniteEnigma() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            bgAudio.volume = 0.25;
+            bgAudio.play().catch(e => console.log("Фоновое аудио ожидает прямого жеста:", e));
+
+            const overlay = document.getElementById("launch-overlay");
+            overlay.style.opacity = "0";
+            setTimeout(() => {
+                overlay.style.display = "none";
+                bootSequence();
+            }, 500);
+        }
+
         userInput.addEventListener("keypress", async function(e) {
             if (e.key === "Enter" && this.value.trim() !== "") {
                 const text = this.value.trim();
@@ -336,7 +406,7 @@
                     currentStep = "message"; 
                     
                     if (audioCtx.state === 'suspended') audioCtx.resume();
-                    bgAudio.play().catch(e => console.log("Фоновое аудио заблокировано", e));
+                    if (bgAudio.paused) bgAudio.play().catch(() => {});
                     
                     await typeText(`[ZAAKCEPTOWANO / ПРИНЯТО] Witam, ${userAlias}.`, 20);
                     await typeText("Oczekiwanie na wprowadzenie danych...", 20);
@@ -392,10 +462,6 @@
                 userInput.focus();
             }
         });
-
-        window.onload = () => {
-            setTimeout(bootSequence, 500);
-        };
     </script>
 </body>
 </html>
