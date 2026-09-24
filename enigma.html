@@ -1,467 +1,1615 @@
 <!DOCTYPE html>
+
 <html lang="pl">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SECURE UPLINK // ENIGMA-M</title>
-    <style>
-        body {
-            background-color: #050505; 
-            color: #00ff41; 
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            padding: 0;
-            font-size: 18px; 
-            font-weight: bold;
-            overflow-x: hidden;
-        }
 
-        .crt-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 3px 100%;
-            z-index: 100;
-            pointer-events: none;
-            box-shadow: inset 0 0 100px rgba(0,255,65,0.15);
-        }
+<meta charset="UTF-8">
 
-        #matrixCanvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 1;
-            opacity: 0.75;
-            pointer-events: none;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .terminal-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 50px 15px 30px 15px; 
-            min-height: 100vh;
-            box-sizing: border-box;
-            position: relative;
-            z-index: 10; 
-        }
+<title>SECURE UPLINK//ENIGMA-M</title>
 
-        .terminal-frame {
-            background: rgba(0, 15, 5, 0.15); 
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border: 1px solid #00ff41;
-            padding: 20px;
-            min-height: 70vh;
-            box-shadow: inset 0 0 15px rgba(0,255,65,0.05);
-        }
+<style>
 
-        #exit-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            cursor: pointer;
-            border: 1px solid #00ff41;
-            background: rgba(0, 15, 5, 0.15);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            color: #00ff41;
-            padding: 5px 10px;
-            font-size: 14px;
-            z-index: 101;
-            transition: all 0.2s;
-        }
+body {
 
-        #exit-btn:hover {
-            background-color: #00ff41;
-            color: #050505;
-            box-shadow: 0 0 15px #00ff41;
-        }
+background-color: #050505;
 
-        #output p {
-            margin: 5px 0;
-            line-height: 1.4;
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-        }
+color: #00ff41;
 
-        .input-line {
-            display: flex;
-            margin-top: 15px;
-        }
+font-family: 'Courier New', Courier, monospace;
 
-        .input-line span {
-            margin-right: 10px;
-            white-space: pre;
-        }
+margin: 0;
 
-        input {
-            background: transparent;
-            border: none;
-            color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 18px;
-            font-weight: bold;
-            outline: none;
-            width: 100%;
-        }
+padding: 0;
 
-        @media (max-width: 600px) {
-            body { font-size: 14px; }
-            input { font-size: 14px; }
-            .terminal-container { padding: 40px 10px 20px 10px; }
-            .terminal-frame { padding: 12px; }
-        }
+font-size: 18px;
 
-        .hidden {
-            display: none !important;
-        }
+font-weight: bold;
 
-        /* =========================================================
-           КРАСНАЯ КНОПКА ЗАПУСКА КАНАЛА
-           ========================================================= */
-        #launch-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 5, 5, 0.96);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-            transition: opacity 0.5s ease;
-        }
+overflow-x: hidden;
 
-        .ignite-btn {
-            background: #ff003c;
-            color: #000;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 19px;
-            font-weight: 900;
-            padding: 16px 32px;
-            border: 2px solid #ff3366;
-            cursor: pointer;
-            letter-spacing: 2px;
-            box-shadow: 0 0 30px rgba(255, 0, 60, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
-            text-transform: uppercase;
-            transition: transform 0.1s ease, box-shadow 0.2s ease;
-        }
+transition: background-color 0.1s ease;
 
-        .ignite-btn:active {
-            transform: scale(0.96);
-            box-shadow: 0 0 45px rgba(255, 0, 60, 1);
-        }
+}
 
-        .ignite-sub {
-            color: #ff003c;
-            font-size: 12px;
-            margin-top: 15px;
-            letter-spacing: 2px;
-            animation: blink 1.2s infinite;
-        }
 
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.2; }
-        }
-    </style>
+
+.crt-overlay {
+
+position: fixed;
+
+top: 0; left: 0; width: 100vw; height: 100vh;
+
+background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+
+linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+
+background-size: 100% 4px, 3px 100%;
+
+z-index: 100;
+
+pointer-events: none;
+
+box-shadow: inset 0 0 100px rgba(0,255,65,0.15);
+
+}
+
+
+
+#matrixCanvas {
+
+position: fixed;
+
+top: 0; left: 0;
+
+width: 100vw; height: 100vh;
+
+z-index: 1;
+
+opacity: 0.75;
+
+pointer-events: none;
+
+}
+
+
+
+.terminal-container {
+
+max-width: 900px;
+
+margin: 0 auto;
+
+padding: 50px 15px 30px 15px;
+
+min-height: 100vh;
+
+box-sizing: border-box;
+
+position: relative;
+
+z-index: 10;
+
+}
+
+
+
+.terminal-frame {
+
+background: rgba(0, 15, 5, 0.15);
+
+backdrop-filter: blur(4px);
+
+-webkit-backdrop-filter: blur(4px);
+
+border: 1px solid #00ff41;
+
+padding: 20px;
+
+min-height: 70vh;
+
+box-shadow: inset 0 0 15px rgba(0,255,65,0.05);
+
+}
+
+
+
+#exit-btn {
+
+position: absolute;
+
+top: 10px;
+
+right: 15px;
+
+cursor: pointer;
+
+border: 1px solid #00ff41;
+
+background: rgba(0, 15, 5, 0.15);
+
+backdrop-filter: blur(4px);
+
+-webkit-backdrop-filter: blur(4px);
+
+color: #00ff41;
+
+padding: 5px 10px;
+
+font-size: 14px;
+
+z-index: 101;
+
+transition: all 0.2s;
+
+}
+
+
+
+#exit-btn:hover {
+
+background-color: #00ff41;
+
+color: #050505;
+
+box-shadow: 0 0 15px #00ff41;
+
+}
+
+
+
+#output p {
+
+margin: 5px 0;
+
+line-height: 1.4;
+
+white-space: pre-wrap;
+
+word-wrap: break-word;
+
+}
+
+
+
+.input-line {
+
+display: flex;
+
+margin-top: 15px;
+
+}
+
+
+
+.input-line span {
+
+margin-right: 10px;
+
+white-space: pre;
+
+}
+
+
+
+input {
+
+background: transparent;
+
+border: none;
+
+color: #00ff41;
+
+font-family: 'Courier New', Courier, monospace;
+
+font-size: 18px;
+
+font-weight: bold;
+
+outline: none;
+
+width: 100%;
+
+}
+
+
+
+.hidden { display: none !important; }
+
+
+
+/* ИНТЕРАКТИВНЫЙ БЛОК БОМБЫ */
+
+#bomb-panel {
+
+margin: 20px 0;
+
+padding: 20px;
+
+background: rgba(13, 15, 18, 0.95);
+
+border: 2px solid #334155;
+
+border-top: 3px solid #64748b;
+
+border-radius: 8px;
+
+box-shadow: 0 10px 30px rgba(0,0,0,0.9), 0 0 25px rgba(255, 0, 60, 0.2);
+
+display: flex;
+
+flex-direction: column;
+
+gap: 15px;
+
+transition: opacity 0.6s ease, transform 0.6s ease, max-height 0.6s ease, margin 0.6s ease, padding 0.6s ease;
+
+max-height: 600px;
+
+overflow: hidden;
+
+}
+
+
+
+.panel-vanish {
+
+opacity: 0 !important;
+
+transform: scale(0.9) translateY(-20px) !important;
+
+max-height: 0 !important;
+
+margin: 0 !important;
+
+padding: 0 !important;
+
+border: none !important;
+
+pointer-events: none !important;
+
+}
+
+
+
+.bomb-header {
+
+display: flex;
+
+justify-content: space-between;
+
+align-items: center;
+
+border-bottom: 1px dashed #334155;
+
+padding-bottom: 10px;
+
+}
+
+
+
+.bomb-title {
+
+color: #ff003c;
+
+font-size: 13px;
+
+letter-spacing: 1px;
+
+display: flex;
+
+align-items: center;
+
+gap: 8px;
+
+}
+
+
+
+.led-indicator {
+
+width: 10px;
+
+height: 10px;
+
+border-radius: 50%;
+
+background: #ff003c;
+
+box-shadow: 0 0 10px #ff003c;
+
+animation: pulse-fast 0.6s infinite alternate;
+
+}
+
+
+
+@keyframes pulse-fast {
+
+from { opacity: 0.2; transform: scale(0.8); }
+
+to { opacity: 1; transform: scale(1.2); }
+
+}
+
+
+
+.bomb-clock {
+
+background: #020202;
+
+border: 2px solid #1e293b;
+
+padding: 6px 16px;
+
+border-radius: 4px;
+
+color: #ff003c;
+
+font-size: 26px;
+
+font-weight: 900;
+
+letter-spacing: 3px;
+
+text-shadow: 0 0 15px rgba(255, 0, 60, 0.9);
+
+min-width: 110px;
+
+text-align: center;
+
+}
+
+
+
+.bomb-wires-container {
+
+display: flex;
+
+flex-direction: column;
+
+gap: 12px;
+
+margin: 10px 0;
+
+}
+
+
+
+.wire-slot {
+
+display: flex;
+
+align-items: center;
+
+justify-content: space-between;
+
+background: rgba(15, 23, 42, 0.8);
+
+padding: 8px 14px;
+
+border-radius: 6px;
+
+border: 1px solid #1e293b;
+
+}
+
+
+
+.wire-graphic {
+
+flex: 1;
+
+height: 6px;
+
+margin: 0 15px;
+
+border-radius: 3px;
+
+position: relative;
+
+transition: all 0.3s ease;
+
+}
+
+
+
+.wire-blue-line { background: #0070f3; box-shadow: 0 0 10px #0070f3; }
+
+.wire-yellow-line { background: #eab308; box-shadow: 0 0 10px #eab308; }
+
+.wire-red-line { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+
+
+.wire-cutted {
+
+background: repeating-linear-gradient(90deg, #1e293b 0, #1e293b 45%, transparent 45%, transparent 55%, #1e293b 55%, #1e293b 100%) !important;
+
+box-shadow: none !important;
+
+opacity: 0.3;
+
+}
+
+
+
+.cut-btn {
+
+font-family: 'Courier New', monospace;
+
+font-weight: 900;
+
+font-size: 13px;
+
+padding: 8px 16px;
+
+border-radius: 4px;
+
+cursor: pointer;
+
+transition: transform 0.1s, box-shadow 0.2s, opacity 0.2s;
+
+text-transform: uppercase;
+
+border: none;
+
+}
+
+
+
+.cut-btn:active { transform: scale(0.92); }
+
+
+
+.btn-blue { background: #0070f3; color: #fff; box-shadow: 0 0 15px rgba(0, 112, 243, 0.4); }
+
+.btn-blue:hover { box-shadow: 0 0 25px rgba(0, 112, 243, 0.8); }
+
+
+
+.btn-yellow { background: #eab308; color: #000; box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); }
+
+.btn-yellow:hover { box-shadow: 0 0 25px rgba(234, 179, 8, 0.8); }
+
+
+
+.btn-red { background: #ef4444; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+
+.btn-red:hover { box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
+
+
+
+.bomb-hint {
+
+font-size: 13px;
+
+color: #e2e8f0;
+
+border-left: 3px solid #00ff41;
+
+padding-left: 10px;
+
+line-height: 1.5;
+
+}
+
+
+
+#launch-overlay {
+
+position: fixed;
+
+top: 0; left: 0; width: 100vw; height: 100vh;
+
+background: rgba(5, 5, 5, 0.96);
+
+display: flex;
+
+flex-direction: column;
+
+justify-content: center;
+
+align-items: center;
+
+z-index: 200;
+
+transition: opacity 0.5s ease;
+
+}
+
+
+
+.ignite-btn {
+
+background: #ff003c;
+
+color: #000;
+
+font-family: 'Courier New', Courier, monospace;
+
+font-size: 19px;
+
+font-weight: 900;
+
+padding: 16px 32px;
+
+border: 2px solid #ff3366;
+
+cursor: pointer;
+
+letter-spacing: 2px;
+
+box-shadow: 0 0 30px rgba(255, 0, 60, 0.8);
+
+text-transform: uppercase;
+
+transition: transform 0.1s ease;
+
+}
+
+.ignite-btn:active { transform: scale(0.96); }
+
+
+
+.ignite-sub {
+
+color: #ff003c;
+
+font-size: 12px;
+
+margin-top: 15px;
+
+letter-spacing: 2px;
+
+animation: blink 1.2s infinite;
+
+}
+
+
+
+@keyframes blink {
+
+0%, 50% { opacity: 1; }
+
+51%, 100% { opacity: 0.2; }
+
+}
+
+
+
+@media (max-width: 600px) {
+
+body { font-size: 14px; }
+
+input { font-size: 14px; }
+
+.bomb-clock { font-size: 20px; }
+
+.cut-btn { font-size: 11px; padding: 6px 10px; }
+
+}
+
+</style>
+
 </head>
+
 <body>
-    <!-- ОВЕРЛЕЙ ЗАПУСКА -->
-    <div id="launch-overlay">
-        <button class="ignite-btn" onclick="igniteEnigma()">[●] PODŁĄCZ // ЗАПУСК КАНАЛА</button>
-        <div class="ignite-sub">&gt; INICJALIZACJA PROTOKOŁU ENIGMA-M &lt;</div>
-    </div>
 
-    <div class="crt-overlay"></div>
-    <canvas id="matrixCanvas"></canvas>
-    
-    <!-- Локальный аудиофайл -->
-    <audio id="bg-audio" loop preload="auto" src="elevator.mp3"></audio>
-    
-    <div id="exit-btn" onclick="window.location.href='index.html'">
-        [X] ZAMKNIJ / ЗАКРЫТЬ
-    </div>
+<div id="launch-overlay">
 
-    <div class="terminal-container">
-        <div class="terminal-frame">
-            <div id="output"></div>
-            <div id="input-container" class="input-line hidden">
-                <span>>_ </span>
-                <input type="text" id="userInput" autocomplete="off" autofocus>
-            </div>
-        </div>
-    </div>
+<button class="ignite-btn" onclick="igniteEnigma()">[●] PODŁĄCZ//ЗАПУСК КАНАЛА</button>
 
-    <script>
-        const outputDiv = document.getElementById("output");
-        const inputContainer = document.getElementById("input-container");
-        const userInput = document.getElementById("userInput");
-        const bgAudio = document.getElementById("bg-audio");
-        bgAudio.volume = 0.25; 
+<div class="ignite-sub">&gt; INICJALIZACJA PROTOKOŁU ENIGMA-M &lt;</div>
 
-        // =========================================================
-        // МАТРИЧНЫЙ ДОЖДЬ
-        // =========================================================
-        const canvas = document.getElementById('matrixCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+</div>
 
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
-        const fontSize = 16;
-        let columns = Math.floor(canvas.width / fontSize);
-        const drops = [];
-        for (let x = 0; x < columns; x++) drops[x] = 1;
 
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#00ff41';
-            ctx.font = fontSize + 'px monospace';
-            
-            for (let i = 0; i < drops.length; i++) {
-                const text = chars.charAt(Math.floor(Math.random() * chars.length));
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
-        }
-        setInterval(drawMatrix, 50);
 
-        // =========================================================
-        // КЛЮЧИ И TELEGRAM ENDPOINT
-        // =========================================================
-        const _k1 = "ODg5NDc3ODk3NjpBQUhlU0kt";
-        const _k2 = "YzlUX3VpZU5mS2Zzdy16emZs";
-        const _k3 = "Nk04dHJfbEMtMA==";
-        const _target = "NDQwMjE0NjY5"; 
-        
-        const _sys_key = atob(_k1 + _k2 + _k3);
-        const _node_id = atob(_target);
-        const _domain_part1 = "aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==";
-        const _domain_part2 = "L3NlbmRNZXNzYWdl";
-        const _endpoint = atob(_domain_part1) + _sys_key + atob(_domain_part2);
+<div class="crt-overlay"></div>
 
-        // =========================================================
-        // АУДИО И ПЕЧАТЬ
-        // =========================================================
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playKeystroke() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
-            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.05);
-        }
+<canvas id="matrixCanvas"></canvas>
 
-        async function typeText(text, speed = 30) {
-            const p = document.createElement("p");
-            outputDiv.appendChild(p);
-            
-            for (let i = 0; i < text.length; i++) {
-                const char = text.charAt(i);
-                
-                if (char === '!') {
-                    const span = document.createElement('span');
-                    span.style.color = '#ff3333';
-                    span.style.textShadow = '0 0 5px rgba(255,51,51,0.8)';
-                    span.textContent = char;
-                    p.appendChild(span);
-                } else {
-                    p.appendChild(document.createTextNode(char));
-                }
-                
-                if (char !== " ") playKeystroke();
-                window.scrollTo(0, document.body.scrollHeight);
-                await new Promise(r => setTimeout(r, speed + Math.random() * 20));
-            }
-            return Promise.resolve();
-        }
 
-        // =========================================================
-        // РАДАР И ЛОГИКА
-        // =========================================================
-        let lastUpdateId = 0;
-        let isPolling = false;
-        
-        let currentStep = "alias"; 
-        let userAlias = "Unknown"; 
+<audio id="bg-audio" loop preload="auto" src="elevator.mp3"></audio>
 
-        async function initRadar() {
-            const url = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==") + _sys_key + atob("L2dldFVwZGF0ZXM=");
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.ok && data.result.length > 0) {
-                    lastUpdateId = data.result[data.result.length - 1].update_id;
-                }
-            } catch (e) {}
-            isPolling = true;
-            scanEther();
-        }
 
-        async function scanEther() {
-            if (!isPolling) return;
-            const url = atob("aHR0cHM6Ly9hcGkudGVsZWdyYW0ub3JnL2JvdA==") + _sys_key + atob("L2dldFVwZGF0ZXM/b2Zmc2V0PQ==") + (lastUpdateId + 1);
-            
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.ok && data.result.length > 0) {
-                    for (const update of data.result) {
-                        lastUpdateId = update.update_id; 
-                        if (update.message && update.message.text) {
-                            if (update.message.text.startsWith('/')) continue;
-                            
-                            inputContainer.classList.add("hidden");
-                            await typeText(" ", 10);
-                            await typeText(">>> UWAGA! PRZYCHODZĄCA TRANSMISJA / ВХОДЯЩИЙ СИГНАЛ <<<", 20);
-                            await typeText(`[CREATOR / СОЗДАТЕЛЬ]: ${update.message.text}`, 40);
-                            await typeText(" ", 10);
-                            inputContainer.classList.remove("hidden");
-                            userInput.focus();
-                        }
-                    }
-                }
-            } catch (e) {}
-            setTimeout(scanEther, 3000);
-        }
+<div id="exit-btn" onclick="window.location.href='index.html'">
 
-        async function bootSequence() {
-            await typeText("=======================================", 10);
-            await typeText(" PROTOKÓŁ «ENIGMA-M» | KANAŁ OTWARTY", 20);
-            await typeText(" ПРОТОКОЛ «ЭНИГМА-M» | КАНАЛ ОТКРЫТ", 20);
-            await typeText(" SECURE UPLINK TO CREATOR / ЗАЩИЩЕННАЯ СВЯЗЬ", 20);
-            await typeText("=======================================", 10);
-            await typeText(" ", 10);
-            
-            await typeText("[!] Aktywny czas odpowiedzi: 10:00 - 15:00 (Gdańsk)", 20);
-            await typeText("[!] Время прямого ответа: 10:00 - 15:00 (Гданьск)", 20);
-            await typeText("[!] Poza godzinami: offline / Вне графика: офлайн", 20);
-            await typeText(" ", 10);
-            
-            await typeText("[*] Cyfrowy konfesjonał. Anonimowy czat bez twarzy.", 25);
-            await typeText("[*] Цифровая исповедальня. Анонимный чат без лиц.", 25);
-            await typeText("[*] Wyrzuć to z siebie. / Выложи душу.", 30);
-            await typeText(" ", 10);
-            
-            await typeText("[*] Inicjalizacja radaru... / Запуск сканера сети...", 15);
-            await initRadar(); 
-            
-            await typeText("Podaj swój kryptonim / Введи свой позывной:", 20);
-            
-            inputContainer.classList.remove("hidden");
-            userInput.focus();
-        }
+[X] ZAMKNIJ // ЗАКРЫТЬ
 
-        // =========================================================
-        // ПУСК ПО КРАСНОЙ КНОПКЕ
-        // =========================================================
-        function igniteEnigma() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            bgAudio.volume = 0.25;
-            bgAudio.play().catch(e => console.log("Фоновое аудио ожидает прямого жеста:", e));
+</div>
 
-            const overlay = document.getElementById("launch-overlay");
-            overlay.style.opacity = "0";
-            setTimeout(() => {
-                overlay.style.display = "none";
-                bootSequence();
-            }, 500);
-        }
 
-        userInput.addEventListener("keypress", async function(e) {
-            if (e.key === "Enter" && this.value.trim() !== "") {
-                const text = this.value.trim();
-                const lowerText = text.toLowerCase();
-                this.value = "";
-                inputContainer.classList.add("hidden"); 
-                
-                await typeText(">_ " + text, 15);
-                await typeText(" ", 10);
-                
-                if (lowerText === "exit" || lowerText === "выход" || lowerText === "wyjscie" || lowerText === "wyjście") {
-                    isPolling = false; 
-                    await typeText("[***] Zamykanie połączenia... / Отключение от узла...", 30);
-                    setTimeout(() => { window.location.href = "index.html"; }, 1000);
-                    return; 
-                }
 
-                if (currentStep === "alias") {
-                    userAlias = text; 
-                    currentStep = "message"; 
-                    
-                    if (audioCtx.state === 'suspended') audioCtx.resume();
-                    if (bgAudio.paused) bgAudio.play().catch(() => {});
-                    
-                    await typeText(`[ZAAKCEPTOWANO / ПРИНЯТО] Witam, ${userAlias}.`, 20);
-                    await typeText("Oczekiwanie na wprowadzenie danych...", 20);
-                    await typeText("Ожидание ввода сообщения...", 20);
-                    
-                    try {
-                        fetch(_endpoint, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: _node_id,
-                                text: `🔌 **СИСТЕМА:** Пользователь *${userAlias}* подключился к каналу.`,
-                                parse_mode: "Markdown"
-                            })
-                        });
-                    } catch (error) {}
+<div class="terminal-container">
 
-                    inputContainer.classList.remove("hidden");
-                    userInput.focus();
-                    return; 
-                }
-                
-                await typeText("[***] Szyfrowanie i transmisja pakietu...", 30);
-                
-                try {
-                    fetch(_endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: _node_id,
-                            text: `📟 **ENIGMA UPLINK**\n👤 От: *${userAlias}*\n\n_${text}_`,
-                            parse_mode: "Markdown"
-                        })
-                    });
-                } catch (error) {}
+<div class="terminal-frame">
 
-                setTimeout(async () => {
-                    await typeText(">>> PAKIET DOSTARCZONY / ПАКЕТ ДОСТАВЛЕН", 20);
-                    await typeText("[!] Chłodzenie nadajnika. / Охлаждение передатчика...", 20);
-                    await typeText("[!] Proszę czekać 5 sekund / Ожидайте 5 сек...", 20);
-                    
-                    await new Promise(resolve => setTimeout(resolve, 5000));
-                    
-                    await typeText("[*] Nadajnik gotowy / Передатчик остыл. Канал свободен.", 20);
-                    inputContainer.classList.remove("hidden");
-                    userInput.focus();
-                }, 1500);
-            }
-        });
+<div id="output"></div>
 
-        document.addEventListener("click", (e) => {
-            if (e.target.id !== "exit-btn" && !inputContainer.classList.contains("hidden")) {
-                userInput.focus();
-            }
-        });
-    </script>
+
+
+<!-- ИНТЕРАКТИВНЫЙ БЛОК БОМБЫ -->
+
+<div id="bomb-panel" class="hidden">
+
+<div class="bomb-header">
+
+<div class="bomb-title">
+
+<span class="led-indicator"></span>
+
+<span>DETONATOR C-4 // ДЕТОНАТОР </span>
+
+</div>
+
+<div id="bomb-timer-display" class="bomb-clock">45.00</div>
+
+</div>
+
+
+
+<div class="bomb-wires-container">
+
+<div class="wire-slot">
+
+<span style="color:#0070f3; font-size:12px;">GND // МАССА</span>
+
+<div id="wire-blue" class="wire-graphic wire-blue-line"></div>
+
+<button id="btn-cut-blue" class="cut-btn btn-blue" onclick="cutWire('blue')">✂️ CUT BLUE</button>
+
+</div>
+
+
+
+<div class="wire-slot">
+
+<span style="color:#eab308; font-size:12px;">CDI // ИМПУЛЬС</span>
+
+<div id="wire-yellow" class="wire-graphic wire-yellow-line"></div>
+
+<button id="btn-cut-yellow" class="cut-btn btn-yellow" onclick="cutWire('yellow')">✂️ CUT YELLOW</button>
+
+</div>
+
+
+
+<div class="wire-slot">
+
+<span style="color:#ef4444; font-size:12px;">12V // ПИТАНИЕ</span>
+
+<div id="wire-red" class="wire-graphic wire-red-line"></div>
+
+<button id="btn-cut-red" class="cut-btn btn-red" onclick="cutWire('red')">✂️ CUT RED</button>
+
+</div>
+
+</div>
+
+
+
+<div id="bomb-hint-text" class="bomb-hint">
+
+<!-- Загадка генерируется динамически -->
+
+</div>
+
+</div>
+
+
+
+<div id="input-container" class="input-line hidden">
+
+<span id="prompt-char">>_ </span>
+
+<input type="text" id="userInput" autocomplete="off" autofocus>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<script>
+
+const outputDiv = document.getElementById("output");
+
+const inputContainer = document.getElementById("input-container");
+
+const userInput = document.getElementById("userInput");
+
+const bgAudio = document.getElementById("bg-audio");
+
+const bombPanel = document.getElementById("bomb-panel");
+
+const bombTimerDisplay = document.getElementById("bomb-timer-display");
+
+const bombHintText = document.getElementById("bomb-hint-text");
+
+bgAudio.volume = 0.25;
+
+
+
+// АДРЕС НОВОГО ВОРКЕРА
+
+const WORKER_GATEWAY = "https://enigma-bridge.vasilyshalamov3011.workers.dev";
+
+
+
+let myNodeId = sessionStorage.getItem('enigma_node_id');
+
+if (!myNodeId) {
+
+myNodeId = Math.floor(1000 + Math.random() * 9000).toString();
+
+sessionStorage.setItem('enigma_node_id', myNodeId);
+
+}
+
+
+
+// =========================================================
+
+// МАТРИЧНЫЙ ДОЖДЬ
+
+// =========================================================
+
+const canvas = document.getElementById('matrixCanvas');
+
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+
+canvas.width = window.innerWidth;
+
+canvas.height = window.innerHeight;
+
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+resizeCanvas();
+
+
+
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%""\'#&_(),.;:?!\\|{}<>[]^~';
+
+const fontSize = 16;
+
+let columns = Math.floor(canvas.width / fontSize);
+
+const drops = [];
+
+for (let x = 0; x < columns; x++) drops[x] = 1;
+
+
+
+function drawMatrix() {
+
+ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+ctx.fillStyle = '#00ff41';
+
+ctx.font = fontSize + 'px monospace';
+
+
+for (let i = 0; i < drops.length; i++) {
+
+const text = chars.charAt(Math.floor(Math.random() * chars.length));
+
+ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+
+drops[i]++;
+
+}
+
+}
+
+setInterval(drawMatrix, 50);
+
+
+
+// =========================================================
+
+// ЗВУКОВОЙ ДВИЖОК
+
+// =========================================================
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+
+function playKeystroke() {
+
+if (audioCtx.state === 'suspended') audioCtx.resume();
+
+const osc = audioCtx.createOscillator();
+
+const gainNode = audioCtx.createGain();
+
+osc.type = 'square';
+
+osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+
+gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+osc.connect(gainNode);
+
+gainNode.connect(audioCtx.destination);
+
+osc.start();
+
+osc.stop(audioCtx.currentTime + 0.05);
+
+}
+
+
+
+function playSnipSound() {
+
+if (audioCtx.state === 'suspended') audioCtx.resume();
+
+const osc = audioCtx.createOscillator();
+
+const gainNode = audioCtx.createGain();
+
+osc.type = 'triangle';
+
+osc.frequency.setValueAtTime(2200, audioCtx.currentTime);
+
+osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.08);
+
+gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+
+gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+osc.connect(gainNode);
+
+gainNode.connect(audioCtx.destination);
+
+osc.start();
+
+osc.stop(audioCtx.currentTime + 0.08);
+
+}
+
+
+
+function playDefuseFanfare() {
+
+if (audioCtx.state === 'suspended') audioCtx.resume();
+
+[523.25, 659.25, 783.99, 1046.50].forEach((freq, index) => {
+
+setTimeout(() => {
+
+const osc = audioCtx.createOscillator();
+
+const gain = audioCtx.createGain();
+
+osc.type = 'sine';
+
+osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+
+gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+
+osc.connect(gain);
+
+gain.connect(audioCtx.destination);
+
+osc.start();
+
+osc.stop(audioCtx.currentTime + 0.25);
+
+}, index * 90);
+
+});
+
+}
+
+
+
+function playExplosionSound() {
+
+if (audioCtx.state === 'suspended') audioCtx.resume();
+
+const osc = audioCtx.createOscillator();
+
+const gain = audioCtx.createGain();
+
+osc.type = 'sawtooth';
+
+osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+
+osc.frequency.exponentialRampToValueAtTime(25, audioCtx.currentTime + 0.9);
+
+gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+
+gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.9);
+
+osc.connect(gain);
+
+gain.connect(audioCtx.destination);
+
+osc.start();
+
+osc.stop(audioCtx.currentTime + 0.9);
+
+}
+
+
+
+async function typeText(text, speed = 25) {
+
+const p = document.createElement("p");
+
+outputDiv.appendChild(p);
+
+
+for (let i = 0; i < text.length; i++) {
+
+const char = text.charAt(i);
+
+if (char === '!' || text.includes("BŁĄD") || text.includes("СБОЙ") || text.includes("DETONACJA") || text.includes("ВЗРЫВ") || text.includes("BLOKADA") || text.includes("ALARM")) {
+
+const span = document.createElement('span');
+
+span.style.color = '#ff3333';
+
+span.style.textShadow = '0 0 5px rgba(255,51,51,0.8)';
+
+span.textContent = char;
+
+p.appendChild(span);
+
+} else {
+
+p.appendChild(document.createTextNode(char));
+
+}
+
+
+if (char !== " ") playKeystroke();
+
+window.scrollTo(0, document.body.scrollHeight);
+
+await new Promise(r => setTimeout(r, speed + Math.random() * 15));
+
+}
+
+return Promise.resolve();
+
+}
+
+
+
+// =========================================================
+
+// ПЕРСОНАЛЬНЫЙ СКАНИРУЮЩИЙ РАДАР (С ПРЕДОХРАНИТЕЛЕМ)
+
+// =========================================================
+
+let isPolling = false;
+
+let currentStep = "alias";
+
+let userAlias = "Unknown";
+
+let pollFailures = 0;
+
+
+let bombTimerInterval = null;
+
+let targetCorrectWire = "yellow";
+
+let isCutting = false;
+
+
+
+// ПУЛ ЗАГАДОК-МЕТАФОР
+
+const WIRE_HINTS = {
+
+blue: [
+
+"> ZAPISKI // ЗАПИСКИ: Prąd musi mieć jak wrócić... Odetnij mu drogę do ramy (punktu odniesienia), a układ straci orientację. // Ток всегда ищет путь назад, на раму. Лиши схему точки отсчета, и она ослепнет.",
+
+"> ZAPISKI // ЗАПИСКИ: Bez oparcia w ziemi, każda wieża runie. Przetnij przewód powrotny, aby zneutralizować ładunek. // Без опоры на землю рухнет любая башня. Перережь обратный провод, чтобы нейтрализовать заряд.",
+
+"> ZAPISKI // ЗАПИСКИ: Minus to fundament. Wyrwij fundament, a cała architektura napięcia się zawali. // Минус — это фундамент. Вырви фундамент, и вся архитектура напряжения рухнет."
+
+],
+
+yellow: [
+
+"> ZAPISKI // ЗАПИСКИ: Zasilanie to nie wszystko. Zabierz mu rytm. Przetnij linię, która dyktuje moment strzału, a cewka zamilknie. // Питание бесполезно без ритма. Оборви нить, диктующую момент удара, и катушка не выстрелит.",
+
+"> ZAPISKI // ЗАПИСКИ: Mózg wysyła impuls, cewka uderza. Przetnij nerw sygnałowy, zanim układ wyda wyrok. // Мозг шлет импульс, катушка бьет. Перережь сигнальный нерв до того, как система вынесет приговор.",
+
+"> ZAPISKI // ЗАПИСКИ: Zegarek tyka, ale to wahadło nadaje tempo. Zniszcz główną linię synchronizacji iskry. // Часы тикают, но темп задает маятник. Уничтожь главную линию синхронизации искры."
+
+],
+
+red: [
+
+"> ZAPISKI // ЗАПИСКИ: Uderz w samo źródło. Odłącz główną arterię płynącą bezpośrednio z akumulatora. Brak potencjału = brak wybuchu. // Бей в первоисточник. Переруби главную артерию от АКБ. Нет потенциала — нет взрыва.",
+
+"> ZAPISKI // ЗАПИСКИ: Zabierz mu krew. Przetnij grubą żyłę zasilającą, a układ umrze z głodu zanim odliczy do zera. // Обескровь его. Перережь толстую питающую жилу, и система умрет от голода, не успев досчитать до нуля.",
+
+"> ZAPISKI // ЗАПИСКИ: Bestia potrzebuje energii by ugryźć. Odłącz bezpośrednie zasilanie pierwotne, aby wyłączyć jej zęby. // Зверю нужна энергия для укуса. Отключи прямое первичное питание, чтобы вырвать ему зубы."
+
+]
+
+};
+
+
+
+async function scanPersonalEther() {
+
+if (!isPolling) return;
+
+try {
+
+const res = await fetch(`${WORKER_GATEWAY}/enigma-poll?sessionId=${myNodeId}`);
+
+if (!res.ok) throw new Error("Network/CORS Error");
+
+
+pollFailures = 0;
+
+const data = await res.json();
+
+
+if (data.replies && data.replies.length > 0) {
+
+for (const reply of data.replies) {
+
+inputContainer.classList.add("hidden");
+
+await typeText(" ", 10);
+
+await typeText(">>> TRANSMISJA ZWROTNA // СИГНАЛ СОЗДАТЕЛЯ <<<", 20);
+
+await typeText(`[CREATOR // ШЕФ]: ${reply}`, 35);
+
+await typeText(" ", 10);
+
+inputContainer.classList.remove("hidden");
+
+userInput.focus();
+
+}
+
+}
+
+} catch (e) {
+
+pollFailures++;
+
+if (pollFailures >= 3) {
+
+isPolling = false;
+
+inputContainer.classList.add("hidden");
+
+await typeText(" ", 10);
+
+await typeText("! [BŁĄD RADARU // СБОЙ РАДАРА] Utracono łączność // Потеряна связь с сервером !", 20);
+
+await typeText(" ", 10);
+
+inputContainer.classList.remove("hidden");
+
+userInput.focus();
+
+return;
+
+}
+
+}
+
+if (isPolling) {
+
+setTimeout(scanPersonalEther, 3500);
+
+}
+
+}
+
+
+
+function setButtonsEnabled(enabled) {
+
+['blue', 'yellow', 'red'].forEach(c => {
+
+const btn = document.getElementById(`btn-cut-${c}`);
+
+if (btn) {
+
+btn.style.pointerEvents = enabled ? 'all' : 'none';
+
+btn.style.opacity = enabled ? '1' : '0.5';
+
+}
+
+});
+
+}
+
+
+
+// =========================================================
+
+// МЕХАНИКА САПЁРА
+
+// =========================================================
+
+function launchBombPanel() {
+
+currentStep = "bomb";
+
+isCutting = false;
+
+setButtonsEnabled(true);
+
+
+const wires = ['blue', 'yellow', 'red'];
+
+targetCorrectWire = wires[Math.floor(Math.random() * wires.length)];
+
+
+
+const hintsForWire = WIRE_HINTS[targetCorrectWire];
+
+const randomHint = hintsForWire[Math.floor(Math.random() * hintsForWire.length)];
+
+bombHintText.textContent = randomHint;
+
+
+
+bombPanel.classList.remove("panel-vanish");
+
+bombPanel.classList.remove("hidden");
+
+bombPanel.style.opacity = "1";
+
+bombPanel.style.pointerEvents = "all";
+
+bombTimerDisplay.style.color = "#ff003c";
+
+bombTimerDisplay.style.textShadow = "0 0 15px rgba(255, 0, 60, 0.9)";
+
+
+
+wires.forEach(c => {
+
+const el = document.getElementById(`wire-${c}`);
+
+if (el) el.classList.remove("wire-cutted");
+
+});
+
+
+
+if (bombTimerInterval) clearInterval(bombTimerInterval);
+
+
+const startTime = Date.now();
+
+bombTimerInterval = setInterval(() => {
+
+const elapsed = Date.now() - startTime;
+
+const remaining = Math.max(0, 45000 - elapsed);
+
+
+const secs = Math.floor(remaining / 1000);
+
+const ms = Math.floor((remaining % 1000) / 10);
+
+bombTimerDisplay.textContent = `${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+
+
+
+if (remaining <= 0) {
+
+clearInterval(bombTimerInterval);
+
+triggerExplosion("CZAS MINĄŁ // ВРЕМЯ ВЫШЛО!");
+
+}
+
+}, 43);
+
+}
+
+
+
+async function cutWire(color) {
+
+if (isCutting) return;
+
+isCutting = true;
+
+setButtonsEnabled(false);
+
+
+
+playSnipSound();
+
+const wireEl = document.getElementById(`wire-${color}`);
+
+if (wireEl) wireEl.classList.add("wire-cutted");
+
+
+
+if (color === targetCorrectWire) {
+
+clearInterval(bombTimerInterval);
+
+bombTimerDisplay.style.color = "#00ff41";
+
+bombTimerDisplay.style.textShadow = "0 0 15px #00ff41";
+
+bombTimerDisplay.textContent = "DEFUSED";
+
+playDefuseFanfare();
+
+
+
+sessionStorage.setItem('enigma_defused', 'true');
+
+
+
+await typeText("\n>>> OBWÓD PRZERWANY // ЦЕПЬ ОБОРВАНА! <<<", 20);
+
+await typeText(">>> [JOHN McCLANE]: «YIPPEE-KI-YAY, MOTHERFUCKER!» <<<", 25);
+
+await typeText("[+] Ładunek rozbrojony. Kanał otwarty. // Заряд обезврежен. Канал открыт.", 20);
+
+await typeText("Wprowadź wiadomość // Введи сообщение dla Шефа:", 20);
+
+
+
+setTimeout(() => {
+
+bombPanel.classList.add("panel-vanish");
+
+setTimeout(() => {
+
+bombPanel.classList.add("hidden");
+
+}, 650);
+
+}, 1000);
+
+
+
+currentStep = "message";
+
+
+pollFailures = 0;
+
+isPolling = true;
+
+scanPersonalEther();
+
+
+
+inputContainer.classList.remove("hidden");
+
+userInput.focus();
+
+} else {
+
+clearInterval(bombTimerInterval);
+
+triggerExplosion("ZŁY PRZEWÓD // КОРОТКОЕ ЗАМЫКАНИЕ!");
+
+}
+
+}
+
+
+
+async function triggerExplosion(reason) {
+
+playExplosionSound();
+
+document.body.style.backgroundColor = "#ff003c";
+
+bombTimerDisplay.textContent = "BOOM!";
+
+
+setTimeout(() => { document.body.style.backgroundColor = "#050505"; }, 250);
+
+
+
+await typeText(`\n! [DETONACJA // ВЗРЫВ] ${reason} !`, 20);
+
+await typeText("! KABOOM! Ładunek eksplodował. Reset... // Заряд сдетонировал. Сброс... !", 20);
+
+await typeText("[!] Chłodzenie elektroniki 5 sekund... // Охлаждение цепи 5 секунд...", 20);
+
+
+
+setTimeout(() => {
+
+launchBombPanel();
+
+}, 5000);
+
+}
+
+
+
+async function bootSequence() {
+
+await typeText("=======================================", 10);
+
+await typeText(" PROTOKÓŁ «ENIGMA-M» // ПРОТОКОЛ «ЭНИГМА-M»", 20);
+
+await typeText(` PRZYPISANY WĘZEŁ // ВАШ УЗЕЛ: #${myNodeId}`, 20);
+
+await typeText("=======================================", 10);
+
+await typeText(" ", 10);
+
+await typeText("[*] Cyfrowy konfesjonał // Цифровая исповедальня.", 20);
+
+
+if (sessionStorage.getItem('enigma_defused') === 'true') {
+
+await typeText("[+] Autoryzacja aktywna // Допуск сапёра подтверждён.", 20);
+
+} else {
+
+await typeText("[*] Wymagana autoryzacja // Требуется допуск.", 20);
+
+}
+
+
+await typeText(" ", 10);
+
+await typeText("Podaj swój kryptonim // Введи свой позывной:", 20);
+
+
+inputContainer.classList.remove("hidden");
+
+userInput.focus();
+
+}
+
+
+
+function igniteEnigma() {
+
+if (audioCtx.state === 'suspended') audioCtx.resume();
+
+bgAudio.volume = 0.25;
+
+bgAudio.play().catch(() => {});
+
+
+
+const overlay = document.getElementById("launch-overlay");
+
+overlay.style.opacity = "0";
+
+setTimeout(() => {
+
+overlay.style.display = "none";
+
+bootSequence();
+
+}, 500);
+
+}
+
+
+
+// =========================================================
+
+// ОБРАБОТЧИК ВВОДА (ЧАТ И СЕТЬ)
+
+// =========================================================
+
+userInput.addEventListener("keypress", async function(e) {
+
+if (e.key === "Enter" && this.value.trim() !== "") {
+
+const text = this.value.trim();
+
+const lowerText = text.toLowerCase();
+
+this.value = "";
+
+inputContainer.classList.add("hidden");
+
+
+await typeText(">_ " + text, 15);
+
+await typeText(" ", 10);
+
+
+if (lowerText === "exit" || lowerText === "выход") {
+
+isPolling = false;
+
+if (bombTimerInterval) clearInterval(bombTimerInterval);
+
+await typeText("[***] Zamykanie połączenia // Отключение от узла...", 25);
+
+setTimeout(() => { window.location.href = "index.html"; }, 800);
+
+return;
+
+}
+
+
+
+// Шаг 1: Позывной
+
+if (currentStep === "alias") {
+
+userAlias = text;
+
+await typeText(`[ZAAKCEPTOWANO // ПРИНЯТО] Węzeł #${myNodeId}: ${userAlias}.`, 20);
+
+
+
+if (sessionStorage.getItem('enigma_defused') === 'true') {
+
+currentStep = "message";
+
+pollFailures = 0;
+
+isPolling = true;
+
+scanPersonalEther();
+
+await typeText("[+] Ładunek już rozbrojony w tej sesji // Допуск действует.", 20);
+
+await typeText("Wprowadź wiadomość // Введи сообщение dla Шефа:", 20);
+
+inputContainer.classList.remove("hidden");
+
+userInput.focus();
+
+return;
+
+}
+
+
+
+await typeText("! [ALARM // ТРЕВОГА] WYKRYTO ŁADUNEK C-4 // ОБНАРУЖЕНА БОМБА !", 20);
+
+await typeText("[*] Rozszyfruj schemat i przetnij kabel // Расшифруй схему и перережь нужный:", 20);
+
+
+launchBombPanel();
+
+return;
+
+}
+
+
+
+// Шаг 2: Отправка сообщений в Telegram (С проверкой лимита)
+
+if (currentStep === "message") {
+
+await typeText("[***] Szyfrowanie pakietu // Передача шифрограммы...", 20);
+
+
+
+try {
+
+const res = await fetch(`${WORKER_GATEWAY}/enigma-send`, {
+
+method: 'POST',
+
+headers: { 'Content-Type': 'application/json' },
+
+body: JSON.stringify({
+
+sessionId: myNodeId,
+
+alias: userAlias,
+
+text: text,
+
+isConnect: false
+
+})
+
+});
+
+
+
+// 🔴 ПРОВЕРКА НА ЛИМИТ СООБЩЕНИЙ (3 в день)
+
+if (res.status === 429) {
+
+await typeText("! [BLOKADA] Przekroczono limit transferu (3/doba). // Превышен суточный лимит (3/3) !", 20);
+
+await typeText("[!] Chłodzenie rdzenia... Spróbuj ponownie za 24 godziny. // Охлаждение ядра... Попробуй через 24 часа.", 20);
+
+
+isPolling = false; // Отключаем радар, чтобы не тратил ресурсы
+
+
+await new Promise(r => setTimeout(r, 2000));
+
+inputContainer.classList.remove("hidden");
+
+userInput.focus();
+
+return;
+
+}
+
+
+
+if (!res.ok) throw new Error("CORS or Server Down");
+
+
+
+await typeText(`>>> PAKIET DOSTARCZONY // ПАКЕТ ДОСТАВЛЕН [#${myNodeId}]`, 20);
+
+await typeText("[*] Czekaj na odpowiedź w tej karcie // Жди ответа здесь.", 20);
+
+} catch (err) {
+
+await typeText("! [BŁĄD // СБОЙ] Brak łączności z serwerem // Сервер недоступен !", 20);
+
+await typeText("[!] Sprawdź połączenie lub ustawienia Worker // Проверь Worker на Cloudflare.", 20);
+
+}
+
+
+
+await new Promise(r => setTimeout(r, 2000));
+
+inputContainer.classList.remove("hidden");
+
+userInput.focus();
+
+return;
+
+}
+
+}
+
+});
+
+
+
+document.addEventListener("click", (e) => {
+
+if (e.target.id !== "exit-btn" && !inputContainer.classList.contains("hidden") && currentStep !== "bomb") {
+
+userInput.focus();
+
+}
+
+});
+
+</script>
+
 </body>
+
 </html>
