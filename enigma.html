@@ -1123,7 +1123,7 @@ return;
 
 if (isPolling) {
 
-setTimeout(scanPersonalEther, 3500);
+setTimeout(scanPersonalEther, 1500);
 
 }
 
@@ -1280,7 +1280,7 @@ await typeText(">>> [JOHN McCLANE]: «YIPPEE-KI-YAY, MOTHERFUCKER!» <<<", 25);
 
 await typeText("[+] Ładunek rozbrojony. Kanał otwarty. // Заряд обезврежен. Канал открыт.", 20);
 
-await typeText("Wprowadź wiadomość // Введи сообщение dla Шефа:", 20);
+await typeText("Wprowadź wiadomość // Введи сообщение:", 20);
 
 
 
@@ -1544,7 +1544,7 @@ isConnect: false
 
 if (res.status === 429) {
 
-await typeText("! [BLOKADA] Przekroczono limit transferu (3/doba). // Превышен суточный лимит (3/3) !", 20);
+await typeText("! [BLOKADA] Przekroczono limit transferu (5/doba). // Превышен суточный лимит (5/5) !", 20);
 
 await typeText("[!] Chłodzenie rdzenia... Spróbuj ponownie za 24 godziny. // Охлаждение ядра... Попробуй через 24 часа.", 20);
 
