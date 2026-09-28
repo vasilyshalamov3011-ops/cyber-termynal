@@ -417,33 +417,92 @@ const VoiceSynth = {
       const available = this.voices.filter(v => v.lang.includes(langData.short));
       
       let bestVoice = 
-        // 1. Ищем оригинальные женские голоса Google (в Chrome)
-        available.find(v => v.name === 'Google русский') ||
-        available.find(v => v.name === 'Google polski') ||
-        // 2. Если их нет, берем встроенные нормальные женские (Windows/Firefox)
-        available.find(v => v.name.includes('Microsoft Irina')) ||
-        available.find(v => v.name.includes('Microsoft Paulina')) ||
-        // 3. Запасные варианты (любой от гугла или любой женский)
-        available.find(v => v.name.includes('Google')) ||
-        available.find(v => v.name.toLowerCase().includes('female')) ||
-        available[0];
+/* =========================================================
+VOICE SYNTHESIS ENGINE (БРОНЕБОЙНАЯ ВЕРСИЯ)
+========================================================= */
+const VoiceSynth = {
+  synth: window.speechSynthesis,
+  voices: [],
+  enabled: true,
 
-      if (bestVoice) {
-        utterance.voice = bestVoice;
-      }
+  init() {
+    // Защита от краша в Firefox при строгих настройках приватности
+    try {
+        const saved = localStorage.getItem('term_voice');
+        this.enabled = saved !== 'false';
+    } catch(e) {
+        this.enabled = true; 
     }
-
-    const bgAudio = document.getElementById("bg-music");
-    let originalVolume = 0.4;
-    if (bgAudio) {
-        originalVolume = bgAudio.volume;
-        bgAudio.volume = 0.05;
+    
+    if (!this.synth) return;
+    
+    const loadVoices = () => { this.voices = this.synth.getVoices(); };
+    loadVoices();
+    if (this.synth.onvoiceschanged !== undefined) {
+      this.synth.onvoiceschanged = loadVoices;
     }
+  },
 
-    utterance.onend = () => { if (bgAudio) bgAudio.volume = originalVolume; };
-    utterance.onerror = () => { if (bgAudio) bgAudio.volume = originalVolume; };
+  cleanText(rawText) {
+    if (!rawText) return "";
+    return rawText.replace(/[*_#`~\[\]]/g, '').replace(/https?:\/\/\S+/g, '').trim();
+  },
 
-    this.synth.speak(utterance);
+  detectLang(text) {
+    if (/[а-яёА-ЯЁ]/.test(text)) return { full: 'ru-RU', short: 'ru' };
+    if (/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(text)) return { full: 'pl-PL', short: 'pl' };
+    return { full: 'en-US', short: 'en' };
+  },
+
+  speak(rawText) {
+    if (!this.enabled || !this.synth) return;
+    const text = this.cleanText(rawText);
+    if (!text) return;
+
+    try {
+        this.synth.cancel();
+
+        if (this.voices.length === 0) this.voices = this.synth.getVoices();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        const langData = this.detectLang(text);
+        utterance.lang = langData.full;
+
+        // Возвращаем чистый, неискаженный голос
+        utterance.volume = 0.5; 
+        utterance.pitch = 1.0;  
+        utterance.rate = 1.0;   
+
+        if (this.voices.length > 0) {
+          const available = this.voices.filter(v => v.lang.includes(langData.short));
+          
+          let bestVoice = 
+            available.find(v => v.name === 'Google русский') ||
+            available.find(v => v.name === 'Google polski') ||
+            available.find(v => v.name.includes('Microsoft Irina')) ||
+            available.find(v => v.name.includes('Microsoft Paulina')) ||
+            available.find(v => v.name.includes('Google')) ||
+            available.find(v => v.name.toLowerCase().includes('female')) ||
+            available[0];
+
+          if (bestVoice) utterance.voice = bestVoice;
+        }
+
+        const bgAudio = document.getElementById("bg-music");
+        let originalVolume = 0.4;
+        
+        if (bgAudio) {
+            originalVolume = bgAudio.volume || 0.4;
+            bgAudio.volume = 0.05;
+        }
+
+        utterance.onend = () => { if (bgAudio) bgAudio.volume = originalVolume; };
+        utterance.onerror = () => { if (bgAudio) bgAudio.volume = originalVolume; };
+
+        this.synth.speak(utterance);
+    } catch (error) {
+        console.log("Сбой аудио-движка:", error);
+    }
   },
 
   stop() {
