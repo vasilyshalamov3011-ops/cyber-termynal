@@ -361,24 +361,71 @@ const VoiceSynth = {
 
     // === БЕЗОПАСНЫЕ НАСТРОЙКИ ===
     // В Firefox сильные отклонения ломают голос, держим ближе к стандарту
-    utterance.volume = 0.5; // Громкость 50%
-    utterance.pitch = 0.9;  // Легкий бас (не ниже 0.8, иначе в FF будет булькать)
-    utterance.rate = 1.0;   // Нормальная скорость
+/* =========================================================
+VOICE SYNTHESIS ENGINE (ВОЗВРАЩАЕМ ЖЕНСКИЙ ГОЛОС GOOGLE)
+========================================================= */
+const VoiceSynth = {
+  synth: window.speechSynthesis,
+  voices: [],
+  enabled: localStorage.getItem('term_voice') !== 'false',
 
-    // === ПОИСК ЛУЧШЕГО ГОЛОСА ===
+  init() {
+    if (!('speechSynthesis' in window)) return;
+    const loadVoices = () => { this.voices = this.synth.getVoices(); };
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  },
+
+  cleanText(rawText) {
+    return rawText
+      .replace(/[*_#`~\[\]]/g, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .trim();
+  },
+
+  detectLang(text) {
+    const hasCyrillic = /[а-яёА-ЯЁ]/i.test(text);
+    const hasPolishOrLatin = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/i.test(text);
+
+    if (hasCyrillic) return { full: 'ru-RU', short: 'ru' };
+    if (hasPolishOrLatin) return { full: 'pl-PL', short: 'pl' };
+    return { full: 'en-US', short: 'en' };
+  },
+
+  speak(rawText) {
+    if (!this.enabled || !('speechSynthesis' in window)) return;
+    const text = this.cleanText(rawText);
+    if (!text) return;
+
+    this.synth.cancel();
+
+    if (this.voices.length === 0) this.voices = this.synth.getVoices();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const langData = this.detectLang(text);
+    utterance.lang = langData.full;
+
+    // Возвращаем нормальные человеческие настройки без занижения тона
+    utterance.volume = 0.5; 
+    utterance.pitch = 1.0;  // 1.0 - это родной звук голоса
+    utterance.rate = 1.0;   
+
+    // === ИЩЕМ ТУ САМУЮ ЖЕНЩИНУ ===
     if (this.voices.length > 0) {
-      // Оставляем только те голоса, которые соответствуют нашему языку (ru, pl или en)
       const available = this.voices.filter(v => v.lang.includes(langData.short));
       
-      // Ищем по приоритету: Гугл Мужской -> Гугл любой -> Microsoft Pavel/Dmitry -> Любой мужской -> Первый попавшийся
       let bestVoice = 
-        available.find(v => v.name.includes('Google') && v.name.toLowerCase().includes('male')) ||
+        // 1. Ищем оригинальные женские голоса Google (в Chrome)
+        available.find(v => v.name === 'Google русский') ||
+        available.find(v => v.name === 'Google polski') ||
+        // 2. Если их нет, берем встроенные нормальные женские (Windows/Firefox)
+        available.find(v => v.name.includes('Microsoft Irina')) ||
+        available.find(v => v.name.includes('Microsoft Paulina')) ||
+        // 3. Запасные варианты (любой от гугла или любой женский)
         available.find(v => v.name.includes('Google')) ||
-        available.find(v => v.name.includes('Microsoft Pavel')) ||
-        available.find(v => v.name.includes('Microsoft Dmitry')) ||
-        available.find(v => v.name.includes('Microsoft Paulina')) || // Для польского
-        available.find(v => v.name.includes('Microsoft')) ||
-        available.find(v => v.name.toLowerCase().includes('male')) ||
+        available.find(v => v.name.toLowerCase().includes('female')) ||
         available[0];
 
       if (bestVoice) {
@@ -386,7 +433,6 @@ const VoiceSynth = {
       }
     }
 
-    // Приглушаем музыку во время разговора
     const bgAudio = document.getElementById("bg-music");
     let originalVolume = 0.4;
     if (bgAudio) {
@@ -394,12 +440,8 @@ const VoiceSynth = {
         bgAudio.volume = 0.05;
     }
 
-    utterance.onend = () => {
-        if (bgAudio) bgAudio.volume = originalVolume;
-    };
-    utterance.onerror = () => {
-        if (bgAudio) bgAudio.volume = originalVolume;
-    };
+    utterance.onend = () => { if (bgAudio) bgAudio.volume = originalVolume; };
+    utterance.onerror = () => { if (bgAudio) bgAudio.volume = originalVolume; };
 
     this.synth.speak(utterance);
   },
