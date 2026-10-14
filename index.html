@@ -2173,7 +2173,7 @@ patron [имя] - сменить   ИИ-патрона    // zmień AI-patrona (
 voice on/off - озвучка  ответов       // synteza mowy (mute / unmute)
 music on/off - управление музыкой    // sterowanie muzyką
 uplink       - защищенный канал Энигма // bezpieczny kanał Enigma
-help         - все команды   // wszystkie komendy
+help         - все команды            // wszystkie komendy
 
 Любой другой текст будет отправлен ИИ-модулю для общения!
 Każdy inny tekst zostanie wysłany do modułu AI!
@@ -2544,36 +2544,36 @@ if (y * 16 > canvas.height && Math.random() > .975) drops[x] = 0; drops[x]++;
 window.addEventListener("click", () => { if (promptLine.style.display !== "none") inputField.focus(); });
 
 /* =====================================================================
-   БЛОК АНОМАЛИИ ПАТРОНОВ (ЖЕСТКИЙ ТАЙМЕР 15 МИНУТ ТОЛЬКО НА ГЛАВНОМ)
+   БЛОК АНОМАЛИИ ПАТРОНОВ (ЖЕСТКИЙ ТАЙМЕР 7 МИНУТ ТОЛЬКО НА ГЛАВНОМ)
    ===================================================================== */
 const SIDEKICK_PHRASES = {
     panika: [
-        "ШЕФ, ИСКРА ПРОПАЛА! МЫ ГОРИМ! // SZEFIE, ISKRA ZNIKŁA! PALIMY SIĘ!",
-        "ТЕМПЕРАТУРА РАСТЕТ! КЛИН НЕМИНУЕМ! // TEMPERATURA ROŚNIE! ZATARCIE NIEUNIKNIONE!",
-        "СМЕСЬ БЕДНАЯ! СМЕСЬ БЕДНАЯ! ААА! // MIESZANKA UBOGA! AAA!"
+        "ШЕФ, ИСКРА ПРОПАЛА! МЫ ГОРИМ!",
+        "ТЕМПЕРАТУРА РАСТЕТ! КЛИН НЕМИНУЕМ!",
+        "СМЕСЬ БЕДНАЯ! СМЕСЬ БЕДНАЯ! ААА!"
     ],
     smutek: [
-        "Опять работать... Компрессии ноль... // Znowu tyrać... Kompresji zero...",
-        "Масла мало... Я сейчас заржавею... // Mało oleju... Zaraz zardzewieję...",
-        "Смысла нет крутить ручку, мы всё равно сломаемся... // Nie ma sensu kręcić manetką, i tak się zepsujemy..."
+        "Опять работать... Компрессии ноль...",
+        "Масла мало... Я сейчас заржавею...",
+        "Смысла нет крутить ручку, мы всё равно сломаемся..."
     ],
     mozg: [
-        "Анализ выхлопа: 40% нагара. Рекомендую чистку. // Analiza spalin: 40% nagaru. Zalecam czyszczenie.",
-        "Угол опережения зажигания сбился на 2 градуса. // Kąt wyprzedzenia zapłonu zaburzony o 2 stopnie.",
-        "Обнаружен подсос воздуха во впускном коллекторе. // Wykryto lewe powietrze w króćcu ssącym."
+        "Анализ выхлопа: 40% нагара. Рекомендую чистку.",
+        "Угол опережения зажигания сбился на 2 градуса.",
+        "Обнаружен подсос воздуха во впускном коллекторе."
     ]
 };
 
 let anomalyTimer = null;
 let isMainScreen = false;
-const FIFTEEN_MINUTES = 15 * 60 * 1000; // Ровно 15 минут
+const SEVEN_MINUTES = 7 * 60 * 1000; // Ровно 7 минут
 
 function resetAnomalyTimer() {
     clearTimeout(anomalyTimer);
     if (!isMainScreen) return;
     anomalyTimer = setTimeout(() => {
         triggerSidekickEvent();
-    }, FIFTEEN_MINUTES);
+    }, SEVEN_MINUTES);
 }
 
 // Сброс таймера при активности на главном экране
@@ -2595,7 +2595,7 @@ function triggerSidekickEvent() {
     const emotionMap = { "panika": "error", "smutek": "idle", "mozg": "scanning" };
     const emotion = emotionMap[randomSidekick];
 
-    playView(`\n[ СИСТЕМНАЯ АНОМАЛИЯ // WŁAMANIE DO SYSTEMU ]\n`, () => {
+    playView(`\n[ СИСТЕМНАЯ АНОМАЛИЯ ]\n`, () => {
         currentPatron = emotion;
         printDroid(randomPhrase, emotion, true, true);
         VoiceSynth.speak(randomPhrase);
