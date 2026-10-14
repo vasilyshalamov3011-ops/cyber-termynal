@@ -621,7 +621,7 @@ Ona nie potrzebuje łańcuchów. Potrzebuje tylko nadziei.
 `;
 
 const STORY_02 = `
-[LOG_002]  ВЫХОД : Трасса 222 и баги реальности
+[LOG_002]  ВЫХОД : Трасса 222 и баги  реальности
 [LOG_002] WYJŚCIE: Trasa  222 i błędy rzeczywistości
 =================================================
 
@@ -1893,6 +1893,7 @@ let gameActive = false; let hackStage = 0; let secretCode = null; let archiveUnl
 let commandHistory = []; let historyIndex = -1;
 let isTyping = false;
 let skipCurrentTyping = false; // Флаг для быстрого вывода текста
+let typingStartTime = 0; // Предохранитель от мгновенного скипа
 
 function printLine(text) {
     const span = document.createElement("span");
@@ -1905,6 +1906,7 @@ function typeText(text, callback, speed = 35) {
     let i = 0;
     isTyping = true;
     skipCurrentTyping = false; // Сбрасываем флаг при старте новой печати
+    typingStartTime = Date.now(); // Засекаем время старта анимации
     
     const textSpan = document.createElement("span");
     const cursorSpan = document.createElement("span");
@@ -1942,21 +1944,32 @@ function typeText(text, callback, speed = 35) {
     run();
 }
 
-// === ПЕРЕХВАТЧИКИ ДЛЯ ПРОПУСКА (СКИП ПО ПРОБЕЛУ, ENTER ИЛИ КЛИКУ) ===
+// === ПЕРЕХВАТЧИКИ ДЛЯ ПРОПУСКА ===
 function triggerSkip() {
-    if (isTyping) {
+    if (isTyping && (Date.now() - typingStartTime > 500)) {
         skipCurrentTyping = true;
     }
 }
 
+// 1. Пробел оставляем по одному нажатию
 document.addEventListener('keydown', function(event) {
-    if (event.code === 'Space' || event.code === 'Enter') {
+    if (event.code === 'Space') {
         triggerSkip();
     }
 });
 
-document.addEventListener('click', function() {
-    triggerSkip();
+// 2. Двойной тап / двойной клик по экрану
+let lastTapTime = 0;
+document.addEventListener('click', function(event) {
+    let currentTime = Date.now();
+    let tapLength = currentTime - lastTapTime;
+    
+    // Если между тапами меньше 400 миллисекунд — засчитываем как двойной тап
+    if (tapLength < 400 && tapLength > 0) {
+        triggerSkip();
+    }
+    
+    lastTapTime = currentTime;
 });
 
 // === ОСТАЛЬНЫЕ ФУНКЦИИ ВЫВОДА ===
@@ -2143,24 +2156,24 @@ playTrack('main');
 const menuText = `
 
 КОМАНДЫ (EN) // KOMENDY (EN):
-story        - читать историю 1 // czytaj historię 1
-story2       - читать историю 2 // czytaj historię 2
-story3       - читать историю 3 // czytaj historię 3
+story        - читать историю 1    // czytaj  historię 1
+story2       - читать историю 2   // czytaj   historię 2
+story3       - читать историю 3  // czytaj    historię 3
 robotron     - допрос алгоритма // przesłuchanie algorytmu
-notes        - заметки // notatki
-projects     - проекты // projekty
-life         - личный архив // archiwum osobiste
-files        - файловая система // system plików
-search       - поиск // szukaj
-status       - система // status systemu
-contact      - контакты // kontakty
+notes        - заметки   // notatki
+projects     - проекты  //  projekty
+life         - личный  архив     // archiwum osobiste
+files        - файловая система //  system plików
+search       - поиск      // szukaj
+status       - система   // status systemu
+contact      - контакты //  kontakty
 scan         - сканирование сектора 539A // skanowanie sektora 539A
-odstrzal     - статус ИИ-патронов // status AI-patronów
-patron [имя] - сменить ИИ-патрона // zmień AI-patrona (kozak, mozg, panika, smutek)
-voice on/off - озвучка ответов // synteza mowy (mute / unmute)
-music on/off - управление музыкой // sterowanie muzyką
+odstrzal     - статус    ИИ-патронов    // status AI-patronów
+patron [имя] - сменить   ИИ-патрона    // zmień AI-patrona (kozak, mozg, panika, smutek)
+voice on/off - озвучка  ответов       // synteza mowy (mute / unmute)
+music on/off - управление музыкой    // sterowanie muzyką
 uplink       - защищенный канал Энигма // bezpieczny kanał Enigma
-help         - все команды // wszystkie komendy
+help         - все команды   // wszystkie komendy
 
 Любой другой текст будет отправлен ИИ-модулю для общения!
 Każdy inny tekst zostanie wysłany do modułu AI!
